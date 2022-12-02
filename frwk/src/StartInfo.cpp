@@ -36,6 +36,10 @@ int StartInfo::getInput()
 			std::cout << "\n######################\nPresenting result for day " << index << "\n";
 			break;
 		}
+		else
+		{
+			std::cout << "\n######################\nNo problem for that day\n######################\n";
+		}
 	}
 
 	return index;

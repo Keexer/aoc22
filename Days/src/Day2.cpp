@@ -69,7 +69,7 @@ void Day2::solveA(Day2::Cont& cont)
         }
     }
 
-    std::cout << "Total score = " << score << '\n';
+    std::cout << "First task: Total score = " << score << '\n';
 }
 
 void Day2::solveB(Day2::Cont& cont)
@@ -119,7 +119,7 @@ void Day2::solveB(Day2::Cont& cont)
         }
     }
 
-    std::cout << "New total score = " << score << '\n';
+    std::cout << "Second task: New total score = " << score << '\n';
 }
 
 void Day2::solve()

@@ -45,13 +45,13 @@ std::vector<int> Day1::extract()
 
 void Day1::presentA(std::vector<int>& vec)
 {
-	std::cout << "Max calories = " << vec.front() << '\n';
+	std::cout << "First task: Max calories = " << vec.front() << '\n';
 }
 
 void Day1::presentB(std::vector<int>& vec)
 {
 	int sum = std::accumulate(vec.begin(), vec.begin() + 3, 0);
-	std::cout << "Three max calories = " << sum << '\n';
+	std::cout << "Second task: Three max calories = " << sum << '\n';
 }
 
 void Day1::solve()
