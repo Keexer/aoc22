@@ -1,9 +1,11 @@
 #pragma once
 
+#include "frwk/DaysHandler.h"
+
 class StartInfo
 {
 public:
-	StartInfo();
-
-
+	StartInfo(DaysHandler& handler);
+	void printIntro();
+	int getInput();
 };

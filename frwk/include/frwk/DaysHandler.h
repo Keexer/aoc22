@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <unordered_map>
 
 namespace details
 {
@@ -80,21 +81,22 @@ public:
 class DaysHandler
 {
 public:
-	DaysHandler()
-	{
-		mDays.assign(25, details::TypeErasedDelegator{ details::Delegator{ DefaultDay{}, &DefaultDay::solve } });
-	}
-
 	size_t numberOfDays() const
 	{
 		return mDays.size();
+	}
+
+	bool exist(size_t day) const
+	{
+		auto index = day - 1;
+		return (mDays.find(index) == mDays.end()) ? false : true;
 	}
 
 	template <typename T>
 	void addDay(T day, size_t index)
 	{
 		details::TypeErasedDelegator t{ details::Delegator{T{}, &T::solve} };
-		mDays[index - 1] = t;
+		mDays.insert({ index - 1, details::TypeErasedDelegator{ details::Delegator{T{}, &T::solve}} });
 	}
 
 	void solveDay(size_t day)
@@ -102,14 +104,19 @@ public:
 		const size_t index = day - 1;
 		if (index < numberOfDays())
 		{
-			mDays[index].solve();
+			mDays.at(index).solve();
 		}
 		else
 		{
-			std::cout << "Day does not exist\n";
+			if (index < 25)
+			{
+				std::cout << "Day is not solved\n";
+				return;
+			}
+			std::cout << "Day does not \"exist\"\n";
 		}
 	}
 
 private:
-	std::vector<details::TypeErasedDelegator> mDays;
+	std::unordered_map<size_t, details::TypeErasedDelegator> mDays;
 };
