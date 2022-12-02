@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.18)
 
 project(AdventOfCode)
 
+set(CMAKE_CXX_STANDARD 17)
+
 function(addLib name)
 	file(GLOB sources ${name}/src/*.cpp)
 	file(GLOB headers ${name}/include/${name}/*.h)

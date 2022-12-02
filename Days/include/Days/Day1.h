@@ -6,11 +6,9 @@
 class Day1
 {
 public:
-	Day1();
+	Day1() = default;
 	std::vector<int> extract();
 	void presentA(std::vector<int>& vec);
 	void presentB(std::vector<int>& vec);
-
-private:
-	std::ifstream mFile;
+	void solve();
 };

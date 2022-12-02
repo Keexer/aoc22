@@ -4,15 +4,14 @@
 #include <algorithm>
 #include <sstream>
 #include <string>
-
-Day1::Day1()
-{}
+#include <fstream>
 
 std::vector<int> Day1::extract()
 {
-	mFile.open("../../Input/Input1.txt");
+	std::ifstream file;
+	file.open("../../Input/Input1.txt");
 
-	if (!mFile.is_open())
+	if (!file.is_open())
 	{
 		return {};
 	}
@@ -21,7 +20,7 @@ std::vector<int> Day1::extract()
 	std::string line {};
 	int val {0};
 
-	while (std::getline(mFile, line))
+	while (std::getline(file, line))
 	{
 		if (line.size() == 0 || line == "\r")
 		{
@@ -34,7 +33,7 @@ std::vector<int> Day1::extract()
 		}
 	}
 
-	mFile.close();
+	file.close();
 
 	std::sort(calories.begin(), calories.end(), [](auto const& a, auto const& b)
 		{
@@ -53,4 +52,11 @@ void Day1::presentB(std::vector<int>& vec)
 {
 	int sum = std::accumulate(vec.begin(), vec.begin() + 3, 0);
 	std::cout << "Three max calories = " << sum << '\n';
+}
+
+void Day1::solve()
+{
+	auto data = extract();
+	presentA(data);
+	presentB(data);
 }

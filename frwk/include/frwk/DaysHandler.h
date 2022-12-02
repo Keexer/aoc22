@@ -1,87 +1,115 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-#include <utility>
+#include <iostream>
 
 namespace details
 {
-class ErasedTypeDay
-{
-public:
-	template <typename T>
-	ErasedTypeDay(T&& t)
-		: mObject(std::make_shared<Concrete<T> >(std::forward<T>(t)))
-	{}
-
-	void extract()
-	{
-		//mObject->extract();
-	}
-
-	void presentA()
-	{
-		mObject->presentA();
-	}
-
-	void presentB()
-	{
-		mObject->presentB();
-	}
-
-	class Concept
-	{
-	public:
-		virtual ~Concept() {};
-		virtual void extract() = 0;
-		virtual void presentA() = 0;
-		virtual void presentB() = 0;
-	};
 
 	template <typename T>
-	class Concrete : public Concept
+	class Delegator
 	{
 	public:
-		Concrete(T&& t)
-			: mObject(std::forward<T>(t))
+		typedef void (T::* Fn)();
+
+		Delegator(T&& t, Fn fn)
+			: mT(std::forward<T>(t))
+			, mFn(fn)
 		{}
 
-		void extract() override
+		void operator()()
 		{
-			//mObject.extract();
+			(mT.*mFn)();
 		}
 
-		void presentA() override
-		{
-			//mObject.presentA();
-		}
-
-		void presentB() override
-		{
-			//mObject.presentB();
-		}
-			
 	private:
-		T mObject;
+		T mT;
+		Fn mFn;
 	};
 
-private:
-	std::shared_ptr<Concept> mObject;
-};
+	class TypeErasedDelegator
+	{
+	public:
+		template <typename T>
+		TypeErasedDelegator(T&& t)
+			: mT(std::make_shared<Concrete<T> >(std::forward<T>(t)))
+		{}
+
+		void solve()
+		{
+			mT->solve();
+		}
+
+		class Concept
+		{
+		public:
+			virtual void solve() = 0;
+		};
+
+		template <typename T>
+		class Concrete : public Concept
+		{
+		public:
+			Concrete(T&& t)
+				: mT(std::forward<T>(t))
+			{}
+
+			virtual void solve() final
+			{
+				mT();
+			}
+
+		private:
+			T mT;
+		};
+
+	private:
+		std::shared_ptr<Concept> mT;
+	};
+
 }
+
+class DefaultDay
+{
+public:
+	void solve()
+	{
+		std::cout << "Day is not yet solved\n";
+	}
+};
 
 class DaysHandler
 {
 public:
 	DaysHandler()
-	{}
+	{
+		mDays.assign(25, details::TypeErasedDelegator{ details::Delegator{ DefaultDay{}, &DefaultDay::solve } });
+	}
+
+	size_t numberOfDays() const
+	{
+		return mDays.size();
+	}
 
 	template <typename T>
-	void addDay(T&& t)
+	void addDay(T day, size_t index)
 	{
-		mDays.push_back(details::ErasedTypeDay(T{}));
+		details::TypeErasedDelegator t{ details::Delegator{T{}, &T::solve} };
+		mDays[index - 1] = t;
+	}
+
+	void solveDay(size_t day)
+	{
+		const size_t index = day - 1;
+		if (index < numberOfDays())
+		{
+			mDays[index].solve();
+		}
+		else
+		{
+			std::cout << "Day does not exist\n";
+		}
 	}
 
 private:
-	std::vector<details::ErasedTypeDay> mDays {};
+	std::vector<details::TypeErasedDelegator> mDays;
 };
