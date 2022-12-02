@@ -3,10 +3,47 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <algorithm>
+
+static constexpr char ROCK = 'A';
+static constexpr char PAPER = 'B';
+static constexpr char SCISSOR = 'C';
 
 int shapeScore(char shape)
 {
-    return shape - 'W';
+    return shape - '@';
+}
+
+constexpr int getOpposite(char opponent)
+{
+    if (opponent == ROCK)
+    {
+        return PAPER;
+    }
+    if (opponent == PAPER)
+    {
+        return SCISSOR;
+    }
+    else
+    {
+        return ROCK;
+    }
+}
+
+constexpr int getLosing(char opponent)
+{
+    if (opponent == ROCK)
+    {
+        return SCISSOR;
+    }
+    if (opponent == PAPER)
+    {
+        return ROCK;
+    }
+    else
+    {
+        return PAPER;
+    }
 }
 
 Day2::Cont Day2::extract()
@@ -35,38 +72,21 @@ void Day2::solveA(Day2::Cont& cont)
     static constexpr int win = 6;
     static constexpr int draw = 3;
 
+    Day2::Cont temp = cont;
+    std::for_each(temp.begin(), temp.end(), [](auto& vec)
+        {
+            static constexpr int diff = 'W' - '@';
+            vec.second -= diff;
+        }
+    );
+
     int score{};
     
-    for (auto v : cont)
+    for (auto v : temp)
     {
         score += shapeScore(v.second);
-        if (v.first - 'A' == v.second - 'X') // draw
-        {
-            score += draw;
-            continue;
-        }
-
-        switch (v.first)
-        {
-        case 'A': // rock
-            if (v.second == 'Y')
-            {
-                score += win;
-            }
-            break;
-        case 'B': // paper
-            if (v.second == 'Z')
-            {
-                score += win;
-            }
-            break;
-        case 'C': // scissor
-            if (v.second == 'X')
-            {
-                score += win;
-            }
-            break;
-        }
+        score += (v.first == v.second) ? draw : 0;
+        score += (v.second == getOpposite(v.first)) ? win : 0;
     }
 
     std::cout << "First task: Total score = " << score << '\n';
@@ -84,37 +104,15 @@ void Day2::solveB(Day2::Cont& cont)
         switch (v.second)
         {
         case 'X':
-            switch (v.first)
-            {
-            case 'A':
-                score += 3;
-                break;
-            case 'B':
-                score += 1;
-                break;
-            case 'C':
-                score += 2;
-                break;
-            }
+            score += shapeScore(getLosing(v.first));
             break;
         case 'Y':
             score += draw;
-            score += v.first - '@';
+            score += shapeScore(v.first);
             break;
         case 'Z':
             score += win;
-            switch (v.first)
-            {
-            case 'A':
-                score += 2;
-                break;
-            case 'B':
-                score += 3;
-                break;
-            case 'C':
-                score += 1;
-                break;
-            }
+            score += shapeScore(getOpposite(v.first));
             break;
         }
     }
