@@ -14,7 +14,7 @@ int main()
 	handler.addDay(Day2{}, 2);
 	handler.addDay(Day3{}, 3);
 	handler.addDay(Day4{}, 4);
-	handler.addDay(Day5{}, 5);
+	handler.addDay(Day5{}, 5); // NOLINT
 
 	StartInfo info(handler);
 	info.printIntro();
