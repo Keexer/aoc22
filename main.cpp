@@ -1,5 +1,6 @@
 #include "Days/Day1.h"
 #include "Days/Day2.h"
+#include "Days/Day3.h"
 #include "frwk/DaysHandler.h"
 #include "frwk/StartInfo.h"
 
@@ -9,6 +10,7 @@ int main()
 
 	handler.addDay(Day1{}, 1);
 	handler.addDay(Day2{}, 2);
+	handler.addDay(Day3{}, 3);
 
 	StartInfo info(handler);
 	info.printIntro();
