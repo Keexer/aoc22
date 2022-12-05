@@ -62,9 +62,9 @@ void Day3::solveA(std::vector<std::string>& vec)
 
 void Day3::solveB(std::vector<std::string>& vec)
 {
-    int line{};
+    size_t line{};
     std::vector<std::vector<std::string> > groups;
-    while (line + 2 < vec.size())
+    while (line < vec.size())
     {
         groups.push_back({vec[line], vec[++line], vec[++line]});
         ++line;
