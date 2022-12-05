@@ -5,7 +5,7 @@
 class StartInfo
 {
 public:
-	StartInfo(DaysHandler& handler);
-	void printIntro();
-	int getInput();
+  StartInfo(DaysHandler& handler);
+  void printIntro();
+  int getInput();
 };

@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.18)
 
 project(AdventOfCode)
 
+find_program(CLANG_TIDY_EXE "clang-tidy")
+set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}" "-checks=-*,clang-analyzer-*,cppcoreguidelines-*,clang-analyzer-cplusplus-*")
+
 set(CMAKE_CXX_STANDARD 17)
 if (WIN32)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX /W3")
@@ -15,6 +18,7 @@ function(addLib name)
 
 	add_library(${name} ${sources} ${headers})
 	target_include_directories(${name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/${name}/include/)
+	set_target_properties(${name} PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
 endfunction()
 
 addLib(Days)
@@ -22,3 +26,4 @@ addLib(frwk)
 
 add_executable(App main.cpp)
 target_link_libraries(App Days frwk)
+set_target_properties(App PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
