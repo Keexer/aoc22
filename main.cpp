@@ -3,6 +3,7 @@
 #include "Days/Day3.h"
 #include "Days/Day4.h"
 #include "Days/Day5.h"
+#include "Days/Day6.h"
 #include "frwk/DaysHandler.h"
 #include "frwk/StartInfo.h"
 
@@ -15,6 +16,7 @@ int main()
 	handler.addDay(Day3{}, 3);
 	handler.addDay(Day4{}, 4);
 	handler.addDay(Day5{}, 5); // NOLINT
+	handler.addDay(Day6{}, 6); // NOLINT
 
 	StartInfo info(handler);
 	info.printIntro();
