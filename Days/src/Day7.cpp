@@ -18,30 +18,35 @@ namespace
     return root.size;
   }
 
-  void sumA(Directory& root, size_t& sum)
+  size_t sumA(Directory& root)
   {
+    size_t sum{};
     for (auto v : root.mDirs)
     {
-      sumA(v.second, sum);
+      sum += sumA(v.second);
     }
 
     if (root.size <= minSizeFolder)
     {
       sum += root.size;
     }
+
+    return sum;
   }
 
-  void findSmallestDirToDelete(Directory& root, size_t sizeToDelete, size_t& min)
+  size_t findSmallestDirToDelete(Directory& root, size_t sizeToDelete, size_t min)
   {
     for (auto v : root.mDirs)
     {
-      findSmallestDirToDelete(v.second, sizeToDelete, min);
+      min = findSmallestDirToDelete(v.second, sizeToDelete, min);
     }
 
     if ((root.size >= sizeToDelete) && (root.size < min))
     {
       min = root.size;
     }
+
+    return min;
   }
 }
 
@@ -72,10 +77,6 @@ Directory Day7::extract()
         {
           currentDir = currentDir->parent;
         }
-      }
-      else if (line == "$ ls")
-      {
-        
       }
       else if (line.find("$ cd") != std::string::npos)
       {
@@ -111,9 +112,7 @@ Directory Day7::extract()
 
 void Day7::solveA(Directory& input)
 {
-  size_t sum{};
-  sumA(input, sum);
-
+  size_t sum = sumA(input);
   std::cout << "Sum of total sizes of directories under 100000: " << sum << '\n';
 }
 
@@ -121,13 +120,12 @@ void Day7::solveB(Directory& input)
 {
   static constexpr size_t totalSize = 70000000;
   static constexpr size_t neededSpace = 30000000;
-  const size_t usedSpace = input.size;
-  const size_t toDelete = usedSpace - (totalSize - neededSpace);
+  const size_t toDelete = input.size - (totalSize - neededSpace);
 
-  size_t min{std::numeric_limits<size_t>::max()};
-  findSmallestDirToDelete(input, toDelete, min);
+  static constexpr size_t min{std::numeric_limits<size_t>::max()};
+  size_t minDir = findSmallestDirToDelete(input, toDelete, min);
 
-  std::cout << "The folder size to delete is: " << min << '\n';
+  std::cout << "The folder size to delete is: " << minDir << '\n';
 }
 
 void Day7::solve()
