@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 17)
 if (WIN32)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX /W3")
 else()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -pedantic -fsanitize=address")
 endif()
 
 function(addLib name)
