@@ -98,9 +98,9 @@ void Day8::solveB(Matrix& input)
 {
   size_t maximum{};
 
-  for (int i = 0; i < input.size(); ++i)
+  for (int i = 0; i < static_cast<int>(input.size()); ++i)
   {
-    for (int j = 0; j < input.front().size(); ++j)
+    for (int j = 0; j < static_cast<int>(input.front().size()); ++j)
     {
       // For each element
       uint8_t origin = input[i][j];
@@ -120,7 +120,7 @@ void Day8::solveB(Matrix& input)
       }
 
       // Bottom
-      for (int bottom = i + 1; bottom < input.size(); ++bottom)
+      for (int bottom = i + 1; bottom < static_cast<int>(input.size()); ++bottom)
       {
         ++bottomScore;
         if (input[bottom][j] >= origin)
@@ -130,7 +130,7 @@ void Day8::solveB(Matrix& input)
       }
 
       // Right
-      for (int right = j + 1; right < input.front().size(); ++right)
+      for (int right = j + 1; right < static_cast<int>(input.front().size()); ++right)
       {
         ++rightScore;
         if (input[i][right] >= origin)
