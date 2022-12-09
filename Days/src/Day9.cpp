@@ -4,9 +4,13 @@
 #include <fstream>
 #include <sstream>
 #include <cmath>
+#include <algorithm>
 
 namespace
 {
+  static constexpr size_t MAP_SIZE = 10000;
+  static constexpr size_t MAP_ORIGIN = 5000;
+
   using Pos = std::pair<int, int>;
   void traverseMap(std::pair<char, uint8_t>& in, Pos& head, Pos& tail)
   {
@@ -73,6 +77,30 @@ namespace
       }
     }
   }
+
+  void updateHead(char op, std::pair<int, int>& head)
+  {
+    if (op == 'U')
+      --head.first;
+    else if (op == 'D')
+      ++head.first;
+    else if (op == 'L')
+      --head.second;
+    else
+      ++head.second;
+  }
+
+  void present(std::vector<std::vector<bool> >& map, std::string print)
+  {
+    size_t visited{};
+
+    for (auto mapRow : map)
+    {
+      visited += std::count(mapRow.begin(), mapRow.end(), true);
+    }
+
+    std::cout << print << visited << '\n';
+  }
 }
 
 Day9::Instructions Day9::extract()
@@ -84,12 +112,10 @@ Day9::Instructions Day9::extract()
     return {};
   }
 
-  std::string line;
-  char operation;
-  uint8_t steps;
-  Instructions instructions;
-
-  size_t counter{};
+  std::string line{};
+  char operation{};
+  uint8_t steps{};
+  Instructions instructions{};
 
   while (std::getline(file, line))
   {
@@ -104,68 +130,44 @@ Day9::Instructions Day9::extract()
 void Day9::solveA(Instructions& inst)
 {
   // For simplicity create a large map to traverse
-  std::vector<bool> row(10000, false);
-  std::vector<std::vector<bool> > map(10000, row);
+  std::vector<bool> row(MAP_SIZE, false);
+  std::vector<std::vector<bool> > map(MAP_SIZE, row);
 
-  static constexpr int initial{ 5000 };
+  static constexpr int initial{ MAP_ORIGIN };
 
   std::pair<int, int> head{ initial, initial };
   std::pair<int, int> tail{ head };
-  map[initial][initial] = true;
 
   for (auto in : inst)
   {
     for (uint8_t i = 0; i < in.second; ++i)
     {
-      if (in.first == 'U')
-        --head.first;
-      else if (in.first == 'D')
-        ++head.first;
-      else if (in.first == 'L')
-        --head.second;
-      else
-        ++head.second;
-
+      updateHead(in.first, head);
       traverseMap(in, head, tail);
       map[tail.first][tail.second] = true;
     }
   }
 
-  size_t visited{};
-
-  for (auto mapRow : map)
-  {
-    visited += std::count(mapRow.begin(), mapRow.end(), true);
-  }
-
-  std::cout << "Tail visited = " << visited << '\n';
+  present(map, "Tail visited = ");
 }
 
 void Day9::solveB(Instructions& inst)
 {
   // For simplicity create a large map to traverse
-  std::vector<bool> row(10000, false);
-  std::vector<std::vector<bool> > map(10000, row);
+  std::vector<bool> row(MAP_SIZE, false);
+  std::vector<std::vector<bool> > map(MAP_SIZE, row);
 
-  static constexpr int initial{ 5000 };
+  static constexpr int initial{ MAP_ORIGIN };
+  static constexpr int knots = 10;
 
   std::pair<int, int> head{ initial, initial };
-  std::vector<std::pair<int, int> > tails{ 10, head }; // 0:th element is head
-  map[initial][initial] = true;
+  std::vector<std::pair<int, int> > tails{ knots, head }; // 0:th element is head
 
   for (auto in : inst)
   {
     for (uint8_t i = 0; i < in.second; ++i)
     {
-      if (in.first == 'U')
-        --tails.front().first;
-      else if (in.first == 'D')
-        ++tails.front().first;
-      else if (in.first == 'L')
-        --tails.front().second;
-      else
-        ++tails.front().second;
-
+      updateHead(in.first, tails.front());
       for (size_t i = 1; i < tails.size(); ++i)
       {
         traverseMap(in, tails[i-1], tails[i]);
@@ -174,14 +176,7 @@ void Day9::solveB(Instructions& inst)
     }
   }
 
-  size_t visited{};
-
-  for (auto mapRow : map)
-  {
-    visited += std::count(mapRow.begin(), mapRow.end(), true);
-  }
-
-  std::cout << "Tail 9 visited = " << visited << '\n';
+  present(map, "Tail 9 visited = ");
 }
 
 void Day9::solve()

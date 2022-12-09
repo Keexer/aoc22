@@ -34,7 +34,7 @@ void Day8::solveA(Matrix& input)
   std::vector<bool> temp(input.front().size(), false);
   std::vector<std::vector<bool> > visible(input.size(), temp);
 
-  auto check = [&](size_t first, size_t second, int8_t& highest)
+  auto check = [&](size_t first, size_t second, int16_t& highest)
   {
     if (input[first][second] > highest)
     {
@@ -46,7 +46,7 @@ void Day8::solveA(Matrix& input)
   // Top
   for (size_t i = 1; i < input.front().size() - 1; ++i)
   {
-    int8_t highest = -1;
+    int16_t highest = -1;
     for (size_t j = 0; j < input.size() - 1; ++j)
     {
       check(j, i, highest);
@@ -56,7 +56,7 @@ void Day8::solveA(Matrix& input)
   // Bottom
   for (size_t i = input.front().size() - 2; i > 0; --i)
   {
-    int8_t highest = -1;
+    int16_t highest = -1;
     for (size_t j = input.size() - 1; j > 0; --j)
     {
       check(j, i, highest);
@@ -66,7 +66,7 @@ void Day8::solveA(Matrix& input)
   // Left
   for (size_t i = 1; i < input.size() - 1; ++i)
   {
-    int8_t highest = -1;
+    int16_t highest = -1;
     for (size_t j = 0; j < input.front().size() - 1; ++j)
     {
       check(i, j, highest);
@@ -76,7 +76,7 @@ void Day8::solveA(Matrix& input)
   // Right
   for (size_t i = 1; i < input.size() - 1; ++i)
   {
-    int8_t highest = -1;
+    int16_t highest = -1;
     for (size_t j = input.front().size() - 1; j > 0; --j)
     {
       check(i, j, highest);

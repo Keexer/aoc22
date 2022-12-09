@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <utility>
+#include <stdint.h>
 
 class Day9
 {
