@@ -67,11 +67,11 @@ Directory Day7::extract()
   {
     if (line.at(0) == '$')
     {
-      if (line == "$ cd /")
+      if (line.find("$ cd /") != std::string::npos)
       {
         currentDir = &root;
       }
-      else if (line == "$ cd ..")
+      else if (line.find("$ cd ..") != std::string::npos)
       {
         if (currentDir->parent != nullptr)
         {
