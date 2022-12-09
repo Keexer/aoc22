@@ -55,18 +55,6 @@ namespace
     else
       head.second += (op == 'L') ? -1 : 1;
   }
-
-  void present(std::vector<std::vector<bool> >& map, std::string print)
-  {
-    size_t visited{};
-
-    for (auto mapRow : map)
-    {
-      visited += std::count(mapRow.begin(), mapRow.end(), true);
-    }
-
-    std::cout << print << visited << '\n';
-  }
 }
 
 Day9::Instructions Day9::extract()
@@ -104,17 +92,23 @@ void Day9::solveA(Instructions& inst)
   std::pair<int, int> head{ initial, initial };
   std::pair<int, int> tail{ head };
 
+  size_t uniqueVisited{};
+
   for (auto in : inst)
   {
     for (uint8_t i = 0; i < in.second; ++i)
     {
       updateHead(in.first, head);
       traverseMap(in.first, head, tail);
-      map[tail.first][tail.second] = true;
+      if (!map[tail.first][tail.second])
+      {
+        ++uniqueVisited;
+        map[tail.first][tail.second] = true;
+      }
     }
   }
 
-  present(map, "Tail visited = ");
+  std::cout << "Tail visited = " << uniqueVisited << '\n';
 }
 
 void Day9::solveB(Instructions& inst)
@@ -129,6 +123,8 @@ void Day9::solveB(Instructions& inst)
   std::pair<int, int> head{ initial, initial };
   std::vector<std::pair<int, int> > tails{ knots, head }; // 0:th element is head
 
+  size_t uniqueVisited{};
+
   for (auto in : inst)
   {
     for (uint8_t i = 0; i < in.second; ++i)
@@ -138,11 +134,15 @@ void Day9::solveB(Instructions& inst)
       {
         traverseMap(in.first, tails[i-1], tails[i]);
       }
-      map[tails.back().first][tails.back().second] = true;
+      if (!map[tails.back().first][tails.back().second])
+      {
+        ++uniqueVisited;
+        map[tails.back().first][tails.back().second] = true;
+      }
     }
   }
 
-  present(map, "Tail 9 visited = ");
+  std::cout << "Tail 9 visited = " << uniqueVisited << '\n';
 }
 
 void Day9::solve()
