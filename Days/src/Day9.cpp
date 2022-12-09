@@ -8,15 +8,15 @@
 
 namespace
 {
-  static constexpr size_t MAP_SIZE = 10000;
-  static constexpr size_t MAP_ORIGIN = 5000;
+  static constexpr size_t MAP_SIZE = 1000;
+  static constexpr size_t MAP_ORIGIN = MAP_SIZE / 2;
 
   using Pos = std::pair<int, int>;
-  void traverseMap(std::pair<char, uint8_t>& in, Pos& head, Pos& tail)
+  void traverseMap(char op, Pos head, Pos& tail)
   {
     static constexpr double epsilon{ 1e-10 };
 
-    if (in.first == 'U')
+    if (op == 'U' || op == 'D')
     {
       auto val = std::sqrt(std::pow((head.first - tail.first), 2) + std::pow((head.second - tail.second), 2));
       if (val > std::sqrt(2) + epsilon)
@@ -28,36 +28,6 @@ namespace
         if (head.second != tail.second)
         {
           tail.second += (head.second > tail.second) ? 1 : -1;
-        }
-      }
-    }
-    else if (in.first == 'D')
-    {
-      auto val = std::sqrt(std::pow((head.first - tail.first), 2) + std::pow((head.second - tail.second), 2));
-      if (val > std::sqrt(2) + epsilon)
-      {
-        if (head.first != tail.first)
-        {
-          tail.first += (head.first > tail.first) ? 1 : -1;
-        }
-        if (head.second != tail.second)
-        {
-          tail.second += (head.second > tail.second) ? 1 : -1;
-        }
-      }
-    }
-    else if (in.first == 'L')
-    {
-      auto val = std::sqrt(std::pow((head.first - tail.first), 2) + std::pow((head.second - tail.second), 2));
-      if (val > std::sqrt(2) + epsilon)
-      {
-        if (head.second != tail.second)
-        {
-          tail.second += (head.second > tail.second) ? 1 : -1 ;
-        }
-        if (head.first != tail.first)
-        {
-          tail.first += (head.first > tail.first) ? 1 : -1;
         }
       }
     }
@@ -80,14 +50,10 @@ namespace
 
   void updateHead(char op, std::pair<int, int>& head)
   {
-    if (op == 'U')
-      --head.first;
-    else if (op == 'D')
-      ++head.first;
-    else if (op == 'L')
-      --head.second;
+    if (op == 'U' || op == 'D')
+      head.first += (op == 'U') ? -1 : 1;
     else
-      ++head.second;
+      head.second += (op == 'L') ? -1 : 1;
   }
 
   void present(std::vector<std::vector<bool> >& map, std::string print)
@@ -143,7 +109,7 @@ void Day9::solveA(Instructions& inst)
     for (uint8_t i = 0; i < in.second; ++i)
     {
       updateHead(in.first, head);
-      traverseMap(in, head, tail);
+      traverseMap(in.first, head, tail);
       map[tail.first][tail.second] = true;
     }
   }
@@ -170,7 +136,7 @@ void Day9::solveB(Instructions& inst)
       updateHead(in.first, tails.front());
       for (size_t i = 1; i < tails.size(); ++i)
       {
-        traverseMap(in, tails[i-1], tails[i]);
+        traverseMap(in.first, tails[i-1], tails[i]);
       }
       map[tails.back().first][tails.back().second] = true;
     }
