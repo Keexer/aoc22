@@ -4,6 +4,13 @@
 #include <iostream>
 #include <sstream>
 
+namespace
+{
+  static constexpr int MAX_CYCLES = 220;
+  static constexpr int FIRST_CYCLE_EVAL = 20;
+  static constexpr int PERIODIC_CYCLE_EVAL = 40;
+}
+
 Day10::Ops Day10::extract()
 {
   std::ifstream file{"../../Input/Input10.txt"};
@@ -35,9 +42,9 @@ void Day10::solveA(Ops& op)
 {
   int v{1};
   int sum{};
-  for (int i = 1; i <= 220; ++i)
+  for (int i = 1; i <= MAX_CYCLES; ++i)
   {
-    if (i % 40 == 20)
+    if (i % PERIODIC_CYCLE_EVAL == FIRST_CYCLE_EVAL)
     {
       int signalStrength = i * v;
       sum += signalStrength;
@@ -57,10 +64,12 @@ void Day10::solveB(Ops& op)
   int v{ 1 };
 
   std::cout << "The capital letters!\n";
+  static constexpr int maxRows = 6;
+  static constexpr int pixelsPerRow = 40;
 
-  for (int row = 0; row < 6; ++row)
+  for (int row = 0; row < maxRows; ++row)
   {
-    for (int pixel = 0; pixel < 40; ++pixel)
+    for (int pixel = 0; pixel < pixelsPerRow; ++pixel)
     {
       if (pixel >= v - 1 && pixel <= v + 1)
       {

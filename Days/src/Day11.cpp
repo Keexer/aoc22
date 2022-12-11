@@ -72,16 +72,18 @@ std::vector<Monkey> Day11::extract()
       std::getline(file, test);
       monkey.dividable = std::stoi(test.substr(test.find("by") + 3));
 
+      static constexpr size_t monkeyOffset = 7;
+
       // True monkey
       std::string trueMonkey;
       std::getline(file, trueMonkey);
-      monkey.trueCondMonkey = std::stoi(trueMonkey.substr(trueMonkey.find("monkey") + 7));
+      monkey.trueCondMonkey = std::stoi(trueMonkey.substr(trueMonkey.find("monkey") + monkeyOffset));
 
       // False monkey
 
       std::string falseMonkey;
       std::getline(file, falseMonkey);
-      monkey.falseCondMonkey = std::stoi(falseMonkey.substr(falseMonkey.find("monkey") + 7));
+      monkey.falseCondMonkey = std::stoi(falseMonkey.substr(falseMonkey.find("monkey") + monkeyOffset));
 
       monkeys.push_back(monkey);
     }
@@ -92,7 +94,9 @@ std::vector<Monkey> Day11::extract()
 
 void Day11::solveA(std::vector<Monkey> monkeys)
 {
-  for (int i = 0; i < 20; ++i)
+  static constexpr int rounds = 20;
+
+  for (int i = 0; i < rounds; ++i)
   {
     for (auto& monkey : monkeys)
     {
@@ -129,7 +133,9 @@ void Day11::solveB(std::vector<Monkey> monkeys)
     commonDividable *= monkey.dividable;
   }
 
-  for (int i = 0; i < 10000; ++i)
+  static constexpr int rounds = 10000;
+
+  for (int i = 0; i < rounds; ++i)
   {
     for (auto& monkey : monkeys)
     {

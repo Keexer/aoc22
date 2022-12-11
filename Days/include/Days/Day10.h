@@ -7,6 +7,7 @@ struct Operation
 {
   virtual int run() = 0;
   virtual bool done() = 0;
+  virtual ~Operation() {}
 };
 
 struct NOOP : Operation
