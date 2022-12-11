@@ -2,16 +2,16 @@
 
 #include <queue>
 #include <functional>
+#include <stdint.h>
 
 struct Monkey
 {
-  std::queue<unsigned int> items{};
-  std::function<void(unsigned int&)> operation;
+  std::queue<uint64_t> items{};
+  std::function<void(uint64_t&)> operation;
   int dividable{};
   int trueCondMonkey{};
   int falseCondMonkey{};
   int counted{};
-  bool multiplication{ true };
 };
 
 class Day11

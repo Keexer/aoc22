@@ -44,18 +44,14 @@ std::vector<Monkey> Day11::extract()
       std::getline(file, operation);
       operation = operation.substr(operation.find("old") + 4);
       char arithmeticOp = operation.at(0);
-      if (arithmeticOp == '+')
-      {
-        monkey.multiplication = false;
-      }
       int modifier{};
       if (operation.find("old") == std::string::npos)
       {
         modifier = std::stoi(operation.substr(2));
       }
-      monkey.operation = [modifier, arithmeticOp](unsigned int& old)
+      monkey.operation = [modifier, arithmeticOp](uint64_t& old)
       {
-        int temp = modifier;
+        uint64_t temp = modifier;
         if (modifier == 0)
         {
           temp = old;
@@ -107,7 +103,7 @@ void Day11::solveA(std::vector<Monkey> monkeys)
         monkey.items.pop();
         monkey.operation(item);
         item /= 3;
-        
+
         if (item % monkey.dividable == 0)
         {
           monkeys.at(monkey.trueCondMonkey).items.push(item);
@@ -127,6 +123,12 @@ void Day11::solveA(std::vector<Monkey> monkeys)
 
 void Day11::solveB(std::vector<Monkey> monkeys)
 {
+  size_t commonDividable{1};
+  for (auto monkey : monkeys)
+  {
+    commonDividable *= monkey.dividable;
+  }
+
   for (int i = 0; i < 10000; ++i)
   {
     for (auto& monkey : monkeys)
@@ -134,12 +136,12 @@ void Day11::solveB(std::vector<Monkey> monkeys)
       while (!monkey.items.empty())
       {
         ++monkey.counted;
-        auto item = monkey.items.front();
+        uint64_t item = monkey.items.front();
         monkey.items.pop();
         monkey.operation(item);
-        item = item % monkey.dividable;
+        item %= commonDividable;
 
-        if (item == 0)
+        if (item % monkey.dividable == 0)
         {
           monkeys.at(monkey.trueCondMonkey).items.push(item);
         }
