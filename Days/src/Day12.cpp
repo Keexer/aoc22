@@ -5,103 +5,106 @@
 #include <queue>
 #include <iostream>
 #include <limits>
+#include <optional>
 
 namespace
 {
 
-int getShortestPath(Data& input)
+std::optional<int> getShortestPath(Data& input)
 {
+  static constexpr int NOT_SET = -1;
   std::vector<std::vector<int> > steps;
 
   for (size_t i = 0; i < input.map.size(); ++i)
   {
-    std::vector<int> row(input.map.front().size(), -1);
+    std::vector<int> row(input.map.front().size(), NOT_SET);
     steps.push_back(row);
   }
 
   struct Node
   {
-    int x{};
-    int y{};
+    int row{};
+    int col{};
     int steps{};
   };
 
   std::queue<Node> nodeQueue{};
-  nodeQueue.push({ input.start.second, input.start.first, 0 });
+  nodeQueue.push({ input.start.first, input.start.second, 0 });
   steps.at(input.start.first).at(input.start.second) = 0;
+
+  const int lastRowIndex = static_cast<int>(input.map.size()) - 1;
+  const int lastColIndex = static_cast<int>(input.map.front().size()) - 1;
 
   while (true)
   {
     if (nodeQueue.empty())
     {
-      return steps.at(input.end.first).at(input.end.second);
+      return {};
     }
 
     auto current = nodeQueue.front();
     nodeQueue.pop();
 
     // up
-    if (current.y > 0)
+    if (current.row > 0) // check that we don't try to access an index out of bounds
     {
-      if (steps.at(current.y - 1).at(current.x) == -1)
+      const int oneRowUp = current.row - 1;
+      if (steps.at(oneRowUp).at(current.col) == NOT_SET) // If step[row][col] is already set there is a shorter path
       {
-        if (input.map.at(current.y - 1).at(current.x) <= input.map.at(current.y).at(current.x) + 1)
+        if (input.map.at(oneRowUp).at(current.col) <= input.map.at(current.row).at(current.col) + 1) // Check that the elevation is at maximum one step higher
         {
-          int newSteps = current.steps + 1;
-          steps.at(current.y - 1).at(current.x) = newSteps;
-          nodeQueue.push({ current.x, current.y - 1, newSteps });
+          const int newSteps = current.steps + 1;
+          steps.at(oneRowUp).at(current.col) = newSteps;
+          nodeQueue.push({ oneRowUp, current.col, newSteps }); // Push this neighbour node on the queue
         }
       }
     }
     // down
-    if (current.y + 1 < static_cast<int>(input.map.size()))
+    if (current.row < lastRowIndex)
     {
-      if (steps.at(current.y + 1).at(current.x) == -1)
+      const int oneRowDown = current.row + 1;
+      if (steps.at(oneRowDown).at(current.col) == NOT_SET)
       {
-        if (input.map.at(current.y + 1).at(current.x) <= input.map.at(current.y).at(current.x) + 1)
+        if (input.map.at(oneRowDown).at(current.col) <= input.map.at(current.row).at(current.col) + 1)
         {
           int newSteps = current.steps + 1;
-          steps.at(current.y + 1).at(current.x) = newSteps;
-          if (current.y + 1 < static_cast<int>(input.map.size()))
-          {
-            nodeQueue.push({ current.x, current.y + 1, newSteps });
-          }
+          steps.at(oneRowDown).at(current.col) = newSteps;
+          nodeQueue.push({ oneRowDown, current.col, newSteps });
         }
       }
     }
     // left
-    if (current.x > 0)
+    if (current.col > 0)
     {
-      if (steps.at(current.y).at(current.x - 1) == -1)
+      const int oneColLeft = current.col - 1;
+      if (steps.at(current.row).at(oneColLeft) == NOT_SET)
       {
-        if (input.map.at(current.y).at(current.x - 1) <= input.map.at(current.y).at(current.x) + 1)
+        if (input.map.at(current.row).at(oneColLeft) <= input.map.at(current.row).at(current.col) + 1)
         {
           int newSteps = current.steps + 1;
-          steps.at(current.y).at(current.x - 1) = newSteps;
-          nodeQueue.push({ current.x - 1, current.y, newSteps });
+          steps.at(current.row).at(oneColLeft) = newSteps;
+          nodeQueue.push({ current.row, oneColLeft, newSteps });
         }
       }
     }
     // right
-    if (current.x + 1 < static_cast<int>(input.map.front().size()))
+    if (current.col < lastColIndex)
     {
-      if (steps.at(current.y).at(current.x + 1) == -1)
+      const int oneColRight = current.col + 1;
+      if (steps.at(current.row).at(oneColRight) == NOT_SET)
       {
-        if (input.map.at(current.y).at(current.x + 1) <= input.map.at(current.y).at(current.x) + 1)
+        if (input.map.at(current.row).at(oneColRight) <= input.map.at(current.row).at(current.col) + 1)
         {
           int newSteps = current.steps + 1;
-          steps.at(current.y).at(current.x + 1) = newSteps;
-          if (current.x + 1 < static_cast<int>(input.map.front().size()))
-          {
-            nodeQueue.push({ current.x + 1, current.y, newSteps });
-          }
+          steps.at(current.row).at(oneColRight) = newSteps;
+          nodeQueue.push({ current.row, oneColRight, newSteps });
         }
       }
     }
 
     if (int shortest = steps.at(input.end.first).at(input.end.second); shortest > 0)
     {
-      return shortest;
+      return std::optional{ shortest };
     }
   }
 }
@@ -127,7 +130,7 @@ Data Day12::extract()
     {
       if (c == 'S')
       {
-        data.start = {static_cast<int>(data.map.size()), static_cast<int>(row.size())};
+        data.start = { static_cast<int>(data.map.size()), static_cast<int>(row.size()) };
         row.push_back(1);
       }
       else if (c == 'E')
@@ -137,12 +140,12 @@ Data Day12::extract()
       }
       else if (c == 'a')
       {
-        data.elevationA.push_back({static_cast<int>(data.map.size()), static_cast<int>(row.size())});
+        data.elevationA.push_back({ static_cast<int>(data.map.size()), static_cast<int>(row.size()) });
         row.push_back(c - 'a' + 1);
       }
       else if (c == '\r')
       {
-        // On linux ignore carriage return
+        // On linux (wsl) ignore carriage return
       }
       else
       {
@@ -157,26 +160,39 @@ Data Day12::extract()
 
 void Day12::solveA(Data& input)
 {
-  auto shortest = getShortestPath(input);
-  std::cout << "Shortest steps to E: " << shortest << '\n';
+  if (auto r = getShortestPath(input); r)
+  {
+    std::cout << "Shortest steps to E: " << *r << '\n';
+  }
+  else
+  {
+    std::cout << "No solution found\n";
+  }
 }
 
 void Day12::solveB(Data& input)
 {
-  int shortest{std::numeric_limits<int>::max()};
+  std::optional<int> shortest{};
   input.elevationA.push_back(input.start);
   for (std::vector<std::pair<int, int> >::iterator it = input.elevationA.begin(); it != input.elevationA.end();)
   {
     input.start = *it;
-    auto steps = getShortestPath(input);
-    if (steps >= 0 && steps < shortest)
+    auto r = getShortestPath(input);
+    if (r && ((*r < shortest) || !shortest))
     {
-      shortest = steps;
+      shortest = *r;
     }
     it = input.elevationA.erase(it);
   }
 
-  std::cout << "Shortest steps from any a to E: " << shortest << '\n';
+  if (shortest)
+  {
+    std::cout << "Shortest steps from any a to E: " << *shortest << '\n';
+  }
+  else
+  {
+    std::cout << "No solution found\n";
+  }
 }
 
 void Day12::solve()
