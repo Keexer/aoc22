@@ -4,7 +4,6 @@
 #include <sstream>
 #include <iostream>
 #include <optional>
-#include <cassert>
 #include <algorithm>
 
 namespace
@@ -37,7 +36,6 @@ Day13::Pack getEvaluationOrder(std::string line)
       openBrackets--;
       if (openBrackets == 0)
       {
-        assert(order.size() == 1);
         ret = order.front();
       }
       else
@@ -53,7 +51,8 @@ Day13::Pack getEvaluationOrder(std::string line)
       {
         if (line.at(peek) == '0')
         {
-          order.back().data.push_back(10);
+          static constexpr int ten = 10;
+          order.back().data.push_back(ten);
           skip = true;
         }
         else
@@ -80,7 +79,7 @@ std::optional<bool> compare(Day13::Pack left, Day13::Pack right)
   using Pack = Day13::Pack;
   std::optional<bool> ret;
 
-  for (int i = 0; i < left.data.size(); ++i)
+  for (size_t i = 0; i < left.data.size(); ++i)
   {
     if (right.data.size() <= i)
     {
@@ -153,13 +152,9 @@ Day13::Data Day13::extract()
 
   while (std::getline(file, line))
   {
-    if (line.size() > 0)
+    if (line.size() > 1) // Notepad++ gives me Windows CR and NL, fix for linux. Fix input format later.... 
     {
       index++;
-      if (index == 25)
-      {
-        int t = 0;
-      }
       if (index % 2 == 0)
       { 
         packetsRight.push_back(getEvaluationOrder(line));
@@ -178,9 +173,11 @@ void Day13::solveA(Data& packets)
 {
   int sum{};
   int index{};
-  for (int i = 0; i < packets.first.size(); ++i)
+
+  for (size_t i = 0; i < packets.first.size(); ++i)
   {
     index++;
+    //std::cout << "Traverse: " << index << '\n';
     auto r = compare(packets.first[i], packets.second[i]);
     if (r)
     {
@@ -189,7 +186,6 @@ void Day13::solveA(Data& packets)
         sum += index;
       }
     }
-    assert(r.has_value());
   }
 
   std::cout << "Sum of right order indices = " << sum << '\n';
