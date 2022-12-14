@@ -12,12 +12,11 @@ namespace
 
 std::optional<int> getShortestPath(Data& input)
 {
-  static constexpr int NOT_SET = -1;
-  std::vector<std::vector<int> > steps;
+  std::vector<std::vector<std::optional<int> > > steps;
 
   for (size_t i = 0; i < input.map.size(); ++i)
   {
-    std::vector<int> row(input.map.front().size(), NOT_SET);
+    std::vector<std::optional<int> > row(input.map.front().size(), std::optional<int>{});
     steps.push_back(row);
   }
 
@@ -49,7 +48,7 @@ std::optional<int> getShortestPath(Data& input)
     if (current.row > 0) // check that we don't try to access an index out of bounds
     {
       const int oneRowUp = current.row - 1;
-      if (steps.at(oneRowUp).at(current.col) == NOT_SET) // If step[row][col] is already set there is a shorter path
+      if (!steps.at(oneRowUp).at(current.col)) // If step[row][col] is already set there is a shorter path
       {
         if (input.map.at(oneRowUp).at(current.col) <= input.map.at(current.row).at(current.col) + 1) // Check that the elevation is at maximum one step higher
         {
@@ -63,7 +62,7 @@ std::optional<int> getShortestPath(Data& input)
     if (current.row < lastRowIndex)
     {
       const int oneRowDown = current.row + 1;
-      if (steps.at(oneRowDown).at(current.col) == NOT_SET)
+      if (!steps.at(oneRowDown).at(current.col))
       {
         if (input.map.at(oneRowDown).at(current.col) <= input.map.at(current.row).at(current.col) + 1)
         {
@@ -77,7 +76,7 @@ std::optional<int> getShortestPath(Data& input)
     if (current.col > 0)
     {
       const int oneColLeft = current.col - 1;
-      if (steps.at(current.row).at(oneColLeft) == NOT_SET)
+      if (!steps.at(current.row).at(oneColLeft))
       {
         if (input.map.at(current.row).at(oneColLeft) <= input.map.at(current.row).at(current.col) + 1)
         {
@@ -91,7 +90,7 @@ std::optional<int> getShortestPath(Data& input)
     if (current.col < lastColIndex)
     {
       const int oneColRight = current.col + 1;
-      if (steps.at(current.row).at(oneColRight) == NOT_SET)
+      if (!steps.at(current.row).at(oneColRight))
       {
         if (input.map.at(current.row).at(oneColRight) <= input.map.at(current.row).at(current.col) + 1)
         {
@@ -102,9 +101,9 @@ std::optional<int> getShortestPath(Data& input)
       }
     }
 
-    if (int shortest = steps.at(input.end.first).at(input.end.second); shortest > 0)
+    if (auto shortest = steps.at(input.end.first).at(input.end.second); shortest)
     {
-      return std::optional{ shortest };
+      return shortest;
     }
   }
 }
