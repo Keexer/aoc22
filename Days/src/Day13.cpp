@@ -5,6 +5,7 @@
 #include <iostream>
 #include <optional>
 #include <cassert>
+#include <algorithm>
 
 namespace
 {
@@ -180,13 +181,15 @@ void Day13::solveA(Data& packets)
   for (int i = 0; i < packets.first.size(); ++i)
   {
     index++;
-    if (auto r = compare(packets.first[i], packets.second[i]); r)
+    auto r = compare(packets.first[i], packets.second[i]);
+    if (r)
     {
       if (*r)
       {
         sum += index;
       }
     }
+    assert(r.has_value());
   }
 
   std::cout << "Sum of right order indices = " << sum << '\n';
@@ -194,6 +197,41 @@ void Day13::solveA(Data& packets)
 
 void Day13::solveB(Data& packets)
 {
+  Pack divier1Type = getEvaluationOrder("[[2]]");
+  Pack divier2Type = getEvaluationOrder("[[6]]");
+
+  std::vector<Pack> all;
+  all.insert(all.begin(), packets.first.begin(), packets.first.end());
+  all.insert(all.end(), packets.second.begin(), packets.second.end());
+  all.push_back(divier1Type);
+  all.push_back(divier2Type);
+
+  std::sort(all.begin(), all.end(), [](auto const& a, auto const& b)
+    {
+      return *compare(a, b);
+    });
+
+  auto it1 = std::find_if(all.begin(), all.end(), [divier1Type](auto& a)
+    {
+      if (auto r = compare(divier1Type, a))
+      {
+        return *r;
+      }
+      return false;
+    });
+  auto it2 = std::find_if(all.begin(), all.end(), [divier2Type](auto& a)
+    {
+      if (auto r = compare(divier2Type, a))
+      {
+        return *r;
+      }
+  return false;
+    });
+
+  auto divider1 = std::distance(all.begin(), it1);
+  auto divider2 = std::distance(all.begin(), it2);
+
+  std::cout << "Decoder key = " << divider1 * divider2 << '\n';
 }
 
 void Day13::solve()
