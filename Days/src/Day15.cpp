@@ -18,7 +18,7 @@ std::vector<Day15::Range> getBlockedTiles(Day15::Data& data, int64_t searchRow)
     auto distanceY = std::abs(pair.first.y - pair.second.y);
     auto taxiDistance = distanceX + distanceY;
 
-    if ((searchRow >= pair.first.y) && (searchRow < (pair.first.y + taxiDistance)) || 
+    if (((searchRow >= pair.first.y) && (searchRow < (pair.first.y + taxiDistance))) || 
        ((searchRow <= pair.first.y) && (searchRow > (pair.first.y - taxiDistance))))
     {
       auto distanceToSearchRow = std::abs(searchRow - pair.first.y);
@@ -34,11 +34,11 @@ void extractValues(std::vector<Day15::Range>& ret)
 {
 
   // Combine ranges
-  for (int k = 0; k < ret.size(); ++k)
+  for (size_t k = 0; k < ret.size(); ++k)
   {
-    for (int i = 0; i < ret.size(); ++i)
+    for (size_t i = 0; i < ret.size(); ++i)
     {
-      for (int j = i + 1; j < ret.size(); ++j)
+      for (size_t j = i + 1; j < ret.size(); ++j)
       {
         if (ret[i].from <= ret[j].to && ret[i].from > ret[j].from)
         {
@@ -52,11 +52,11 @@ void extractValues(std::vector<Day15::Range>& ret)
     }
   }
 
-  std::set<int> discard;
+  std::set<size_t> discard;
   // Remove already contained
-  for (int i = 0; i < ret.size(); ++i)
+  for (size_t i = 0; i < ret.size(); ++i)
   {
-    for (int j = i + 1; j < ret.size(); ++j)
+    for (size_t j = i + 1; j < ret.size(); ++j)
     {
       if (ret[i].from <= ret[j].from && ret[i].to >= ret[j].to)
       {
@@ -160,13 +160,16 @@ void Day15::solveB(Data& data)
   //static constexpr int maxSize = 20;
   static constexpr int maxSize = 4000000;
 
+  static constexpr int logInterval = 100000;
+  static constexpr int logCalculationSize = 40000;
+
   int64_t closest = 0;
 
   for (int64_t i = 0; i <= maxSize; i++)
   {
-    if ((i % 100000) == 0)
+    if ((i % logInterval) == 0)
     {
-      std::cout << "Progress: " << i/40000 << "%" << '\n';
+      std::cout << "Progress: " << i/ logCalculationSize << "%" << '\n';
     }
     auto ret = getBlockedTiles(data, i);
 
@@ -210,7 +213,7 @@ void Day15::solveB(Data& data)
           break;
         }
       }
-      std::cout << "Distress beacon tuning frequency is = " << column * 4000000 + i << '\n';
+      std::cout << "Distress beacon tuning frequency is = " << column * maxSize + i << '\n';
       break;
     }
   }
