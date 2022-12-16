@@ -13,6 +13,12 @@ public:
     int64_t y;
   };
 
+  struct Range
+  {
+    int64_t from;
+    int64_t to;
+  };
+
   struct Beacon : public Coords
   {};
 

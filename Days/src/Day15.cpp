@@ -4,12 +4,13 @@
 #include <sstream>
 #include <iostream>
 #include <set>
+#include <unordered_map>
 
 namespace
 {
-std::set<int64_t> getBlockedTiles(Day15::Data& data, int searchRow)
+std::vector<Day15::Range> getBlockedTiles(Day15::Data& data, int64_t searchRow)
 {
-  std::set<int64_t> blockOnSearchRow;
+  std::vector<Day15::Range> ranges;
 
   for (auto pair : data)
   {
@@ -17,120 +18,67 @@ std::set<int64_t> getBlockedTiles(Day15::Data& data, int searchRow)
     auto distanceY = std::abs(pair.first.y - pair.second.y);
     auto taxiDistance = distanceX + distanceY;
 
-    if ((searchRow >= pair.first.y) && (searchRow < (pair.first.y + taxiDistance)))
+    if ((searchRow >= pair.first.y) && (searchRow < (pair.first.y + taxiDistance)) || 
+       ((searchRow <= pair.first.y) && (searchRow > (pair.first.y - taxiDistance))))
     {
       auto distanceToSearchRow = std::abs(searchRow - pair.first.y);
       auto blockedToPlace = (taxiDistance - distanceToSearchRow) * 2 + 1;
-      blockOnSearchRow.insert(pair.first.x);
-      for (int i = 1; i <= blockedToPlace / 2; i++)
-      {
-        blockOnSearchRow.insert(pair.first.x - i);
-        blockOnSearchRow.insert(pair.first.x + i);
-      }
-    }
-    else if ((searchRow <= pair.first.y) && (searchRow > (pair.first.y - taxiDistance))) // Can put in if above and make distanceToSearchRow std::abs();
-    {
-      auto distanceToSearchRow = pair.first.y - searchRow;
-      auto blockedToPlace = (taxiDistance - distanceToSearchRow) * 2 + 1;
-      blockOnSearchRow.insert(pair.first.x);
-      for (int i = 1; i <= blockedToPlace / 2; i++)
-      {
-        blockOnSearchRow.insert(pair.first.x - i);
-        blockOnSearchRow.insert(pair.first.x + i);
-      }
+      ranges.push_back({ pair.first.x - blockedToPlace / 2, pair.first.x + blockedToPlace / 2 });
     }
   }
 
-  return blockOnSearchRow;
+  return ranges;
 }
 
-Day15::Coords findDistressBeacon(Day15::Data& data, int64_t maxSize)
+void extractValues(std::vector<Day15::Range>& ret)
 {
-  for (int64_t y = 0; y <= maxSize; y++)
+
+  // Combine ranges
+  for (int k = 0; k < ret.size(); ++k)
   {
-    std::set<int64_t> blockOnSearchRow;
- 
-    for (auto pair : data)
+    for (int i = 0; i < ret.size(); ++i)
     {
-      auto distanceX = std::abs(pair.first.x - pair.second.x);
-      auto distanceY = std::abs(pair.first.y - pair.second.y);
-      auto taxiDistance = distanceX + distanceY;
-
-      if ((y >= pair.first.y) && (y < (pair.first.y + taxiDistance)))
+      for (int j = i + 1; j < ret.size(); ++j)
       {
-        auto distanceToSearchRow = std::abs(y - pair.first.y);
-        auto blockedToPlace = (taxiDistance - distanceToSearchRow) * 2 + 1;
-        if ((pair.first.x >= 0) && (pair.first.x <= maxSize))
+        if (ret[i].from <= ret[j].to && ret[i].from > ret[j].from)
         {
-          blockOnSearchRow.insert(pair.first.x);
+          ret[i].from = ret[j].from;
         }
-        for (int i = 1; i <= blockedToPlace / 2; i++)
+        if (ret[i].to < ret[j].to && ret[i].to >= ret[j].from)
         {
-          bool overflow1 = pair.first.x - i < 0;
-          bool overflow2{ pair.first.x + i > maxSize };
-          if (!overflow1)
-          {
-            blockOnSearchRow.insert(pair.first.x - i);
-          }
-          if (!overflow2)
-          {
-            blockOnSearchRow.insert(pair.first.x + i);
-          }
-          if (overflow1 && overflow2)
-          {
-            break;
-          }
+          ret[i].to = ret[j].to;
         }
       }
-      else if ((y <= pair.first.y) && (y > (pair.first.y - taxiDistance))) // Can put in if above and make distanceToSearchRow std::abs();
-      {
-        auto distanceToSearchRow = pair.first.y - y;
-        auto blockedToPlace = (taxiDistance - distanceToSearchRow) * 2 + 1;
-        if ((pair.first.x >= 0) && (pair.first.x <= maxSize))
-        {
-          blockOnSearchRow.insert(pair.first.x);
-        }
-        for (int i = 1; i <= blockedToPlace / 2; i++)
-        {
-          bool overflow1 = pair.first.x - i < 0;
-          bool overflow2{ pair.first.x + i > maxSize };
-          if (!overflow1)
-          {
-            blockOnSearchRow.insert(pair.first.x - i);
-          }
-          if (!overflow2)
-          {
-            blockOnSearchRow.insert(pair.first.x + i);
-          }
-          if (overflow1 && overflow2)
-          {
-            break;
-          }
-        }
-      }
-    }
-
-    if (blockOnSearchRow.size() > static_cast<size_t>(maxSize))
-    {
-      continue;
-    }
-
-    if (blockOnSearchRow.size() == maxSize)
-    {
-      int64_t foundX{ 0 };
-      for (int64_t i = 0; i <= maxSize; i++)
-      {
-        if (!blockOnSearchRow.contains(i))
-        {
-          foundX = i;
-          break;
-        }
-      }
-      return {foundX, y};
     }
   }
 
-  return { 0, 0 };
+  std::set<int> discard;
+  // Remove already contained
+  for (int i = 0; i < ret.size(); ++i)
+  {
+    for (int j = i + 1; j < ret.size(); ++j)
+    {
+      if (ret[i].from <= ret[j].from && ret[i].to >= ret[j].to)
+      {
+        discard.insert(j);
+      }
+    }
+  }
+
+  // Now remove them
+  int index{};
+  for (std::vector<Day15::Range>::iterator it = ret.begin(); it != ret.end();)
+  {
+    if (discard.find(index) != discard.end())
+    {
+      it = ret.erase(it);
+    }
+    else
+    {
+      it++;
+    }
+    index++;
+  }
 }
 }
 
@@ -171,6 +119,10 @@ void Day15::solveA(Data& data)
   static constexpr int searchRow = 2000000;
 
   auto ret = getBlockedTiles(data, searchRow);
+  extractValues(ret);
+
+  int adjustment = 0;
+  std::unordered_map<int64_t, int64_t> store;
 
   for (auto pair : data)
   {
@@ -178,21 +130,29 @@ void Day15::solveA(Data& data)
     auto sensor = pair.first;
     if (beacon.y == searchRow)
     {
-      if (ret.find(beacon.x) != ret.end())
+      if (store[beacon.y] == 0)
       {
-        ret.erase(beacon.x);
+        store[beacon.y]++;
+        adjustment++;
       }
     }
     if (sensor.y == searchRow)
     {
-      if (ret.find(sensor.x) != ret.end())
+      if (store[sensor.y] == 0)
       {
-        ret.erase(sensor.x);
+        store[sensor.y]++;
+        adjustment++;
       }
     }
   }
 
-  std::cout << "Number of blocked tiles = " << ret.size() << '\n';
+  int64_t sum{};
+  for (auto v : ret)
+  {
+    sum += v.to - v.from + 1;
+  }
+
+  std::cout << "Number of blocked tiles = " << sum - adjustment << '\n';
 }
 
 void Day15::solveB(Data& data)
@@ -200,8 +160,60 @@ void Day15::solveB(Data& data)
   //static constexpr int maxSize = 20;
   static constexpr int maxSize = 4000000;
 
-  auto val = findDistressBeacon(data, maxSize);
-  std::cout << "Distress beacon tuning frequency is = " << val.x * 4000000 + val.y << '\n';
+  int64_t closest = 0;
+
+  for (int64_t i = 0; i <= maxSize; i++)
+  {
+    if ((i % 100000) == 0)
+    {
+      std::cout << "Progress: " << i/40000 << "%" << '\n';
+    }
+    auto ret = getBlockedTiles(data, i);
+
+    // Constrain to [0, 4000000]
+    for (auto& v : ret)
+    {
+      v.from = (v.from < 0) ? 0 : v.from;
+      v.to = (v.to > maxSize) ? maxSize : v.to;
+    }
+
+    extractValues(ret);
+
+    int64_t sum{};
+    for (auto v : ret)
+    {
+      sum += v.to - v.from + 1;
+    }
+
+    if (sum < maxSize + 1 && sum > closest)
+    {
+      closest = sum;
+    }
+
+    if (sum == maxSize)
+    {
+      int64_t column = 0;
+      for (auto v : ret)
+      {
+        bool run = true;
+        for (int64_t value = v.from; value <= v.to; value++)
+        {
+          if (column != value)
+          {
+            run = false;
+            break;
+          }
+          column++;
+        }
+        if (!run)
+        {
+          break;
+        }
+      }
+      std::cout << "Distress beacon tuning frequency is = " << column * 4000000 + i << '\n';
+      break;
+    }
+  }
 }
 
 void Day15::solve()
