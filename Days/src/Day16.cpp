@@ -28,40 +28,27 @@ std::vector<size_t> getSteps(std::vector<std::vector<size_t> > steps, size_t cur
 class Dfs
 {
 public:
-  Dfs(Day16::Data data, std::vector<std::vector<size_t> > steps)
-    : mData(data)
-    , mSteps(steps)
+  size_t DFS(Day16::Report& r, std::string current, size_t time, size_t total, std::unordered_set<std::string>& open)
   {
-    for (auto i = 0; i < data.size(); ++i)
-    {
-      if (data[i].flowRate > 0)
-      {
-        mPossibleValves.insert(i);
-      }
-    }
-  }
+    size_t max = total + getFlow(r.flowRate2, open) * (30 - time);
 
-  size_t DFS(size_t current, size_t time, size_t total, std::unordered_set<size_t>& open)
-  {
-    size_t max = total + getFlow(open) * (30 - time);
-
-    for (auto next : mPossibleValves)
+    for (auto next : r.usefulValves)
     {
       if (open.contains(next))
       {
         continue;
       }
 
-      size_t timeDelta = mSteps[current][next] + 1;
+      size_t timeDelta = r.steps[current][next] + 1;
 
       if (time + timeDelta >= 30)
       {
         continue;
       }
 
-      size_t newTotal = total + timeDelta * getFlow(open);
+      size_t newTotal = total + timeDelta * getFlow(r.flowRate2, open);
       open.insert(next);
-      size_t value = DFS(next, time + timeDelta, newTotal, open);
+      size_t value = DFS(r, next, time + timeDelta, newTotal, open);
       if (max < value)
       {
         max = value;
@@ -72,13 +59,49 @@ public:
     return max;
   }
 
+  size_t dfs_elephant(Day16::Report& r, std::string current, bool elephant, int64_t time, int64_t total, std::unordered_set<std::string>&open, const std::unordered_set<std::string>&useful) {
+    // If we do nothing the maximum is: current total + flow from all opened valves * remaining time
+    int64_t max = total + getFlow(r.flowRate2, open) * (26 - time);
+    // But if we are us, we can let loose an elephant
+    if (!elephant) {
+      // The elephant can only open valves that we haven't open yet.
+      std::unordered_set<std::string> new_candidates = useful;
+      for (auto& v : open) new_candidates.erase(v);
+
+      std::unordered_set<std::string> new_open;
+      // Let the elephant run around from "AA" at time zero
+      int64_t max_elephant = dfs_elephant(r, "AA", true, 0, 0, new_open, new_candidates);
+      max = total + getFlow(r.flowRate2, open) * (26 - time) + max_elephant;
+    }
+    for (auto& next : useful) {
+      // moving to this valve is useless, as it is already open
+      if (open.contains(next))
+        continue;
+
+      int64_t time_delta = r.steps[current][next] + 1;
+      // moving to this valve and opening it would take more time than we have
+      if (time + time_delta >= 26)
+        continue;
+
+      // the flow as we move to the next valve and open it
+      int64_t new_total = total + time_delta * getFlow(r.flowRate2, open);
+      open.insert(next);
+      // recurse with this valve open, if it is an improvement, remember
+      // importantly, this path is common for both the us and the elephant
+      int64_t value = dfs_elephant(r, next, elephant, time + time_delta, new_total, open, useful);
+      if (max < value) max = value;
+      open.erase(next);
+    }
+    return max;
+  }
+
 private:
-  size_t getFlow(std::unordered_set<size_t> open)
+  size_t getFlow(std::unordered_map<std::string, size_t> flow, std::unordered_set<std::string> open)
   {
     size_t sum{};
     for (auto v : open)
     {
-      sum += mData.at(v).flowRate;
+      sum += flow[v];
     }
 
     return sum;
@@ -89,75 +112,46 @@ private:
   std::set<size_t> mPossibleValves;
 };
 
-std::vector<std::vector<size_t> > createGraph(Day16::Data& data)
+auto floydWarshall(std::unordered_set<std::string> valves, std::unordered_multimap<std::string, std::string> neighbours)
 {
-  std::vector<size_t> row(data.size(), INF);
-  std::vector<std::vector<size_t> > graph(data.size(), row);
-
-  for (size_t i = 0; i < data.size(); ++i)
+  std::unordered_map<std::string, std::unordered_map<std::string, size_t>> distance;
+  for (auto& from : valves)
   {
-    for (size_t j = 0; j < data[i].paths.size(); ++j)
+    for (auto& to : valves)
     {
-      for (int k = 0; k < data.size(); ++k)
-      {
-        if (data[k].origin == data[i].paths[j])
-        {
-          if (!data[k].valveOpen)
-          {
-            graph[i][k] = data[k].flowRate;
-          }
-          else
-          {
-            graph[i][k] = 0;
-          }
-        }
-      }
-    }
-    graph[i][i] = 0;
-  }
-
-  return graph;
-}
-
-std::vector<std::vector<size_t> > findMostValuePath(std::vector<std::vector<size_t> >& graph)
-{
-  std::vector<size_t> cols(graph.front().size(), 0);
-  std::vector<std::vector<size_t> > steps{graph.size(), cols};
-
-  for (size_t i = 0; i < steps.front().size(); ++i)
-  {
-    for (size_t j = 0; j < steps.size(); ++j)
-    {
-      steps[i][j] = j;
+      distance[from][to] = valves.size() + 1;
     }
   }
 
-  for (size_t k = 0; k < graph.size(); ++k)
+  for (auto& [from, to] : neighbours)
   {
-    for (size_t i = 0; i < graph.size(); ++i)
+    distance[from][to] = 1;
+  }
+  
+  for (auto& from : valves)
+  {
+    distance[from][from] = 0;
+  }
+  
+  for (auto& via : valves)
+  {
+    for (auto& from : valves)
     {
-      for (size_t j = 0; j < graph.size(); ++j)
+      for (auto& to : valves)
       {
-        if (graph[i][j] > (graph[i][k] + graph[k][j])
-          && (graph[k][j] != INF
-            && graph[i][k] != INF))
-        {
-          graph[i][j] = graph[i][k] + graph[k][j];
-steps[i][j] = steps[i][k];
-        }
+        if (distance[from][to] > distance[from][via] + distance[via][to])
+          distance[from][to] = distance[from][via] + distance[via][to];
       }
     }
   }
 
-  return steps;
+  return distance;
 }
 
 }
 
 Day16::Data Day16::extract()
 {
-  Data ret{};
-
   std::ifstream file{ "../../Input/Input16.txt" };
 
   if (!file.is_open())
@@ -166,14 +160,17 @@ Day16::Data Day16::extract()
   }
 
   std::string line;
+  Report r;
 
   while (std::getline(file, line))
   {
-    Report r;
     r.valveOpen = false;
 
-    r.origin = std::hash<std::string>{}(line.substr(6, 2));
-    r.flowRate = std::stoi(line.substr(line.find("=") + 1, line.find(";")));
+    std::string valve = line.substr(6, 2);
+
+    r.valves.insert(valve);
+    std::string flow = line.substr(line.find("=") + 1, line.find(";"));
+    r.flowRate2[valve] = std::stoi(flow);
 
     line = line.erase(0, line.find("valve") + sizeof("valve"));
     if (line.at(0) == ' ')
@@ -187,63 +184,43 @@ Day16::Data Day16::extract()
       if (comma == std::string::npos)
       {
         // add last
-        r.paths.push_back(std::hash<std::string>{}(line));
+        r.neighbours.insert(std::make_pair(valve, line));
         break;
       }
-      r.paths.push_back(std::hash<std::string>{}(line.substr(0, comma)));
+      r.neighbours.insert(std::make_pair(valve, line.substr(0, comma)));
       line = line.erase(0, comma + 2);
     }
-
-    ret.push_back(r);
   }
 
-  return ret;
+  for (auto v : r.flowRate2)
+  {
+    if (v.second > 0)
+    {
+      r.usefulValves.insert(v.first);
+    }
+  }
+
+  r.steps = floydWarshall(r.valves, r.neighbours);
+
+  return r;
 }
 
 void Day16::solveA(Data& data)
 {
-  // Create graph
-  auto graph = createGraph(data);
-
-  // Find shortest path
-  auto steps = findMostValuePath(graph);
-
-  std::vector<std::vector<size_t> > allSteps;
-
-  for (size_t i = 0; i < graph.size(); i++)
-  {
-    std::vector<size_t> temp;
-    for (size_t j = 0; j < graph.size(); j++)
-    {
-      auto r = getSteps(steps, i, j);
-      temp.push_back(r.size());
-    }
-    allSteps.push_back(temp);
-  }
-
-  Dfs dfs(data, allSteps);
-
-  size_t startIndex{};
-
-  for (int i = 0; i < data.size(); ++i)
-  {
-    if (data[i].origin == std::hash<std::string>{}("AA"))
-    {
-      startIndex = i;
-      break;
-    }
-  }
-
-  std::unordered_set<size_t> open;
-  auto sum = dfs.DFS(startIndex, 0, 0, open);
+  Dfs d;
+  std::unordered_set<std::string> open;
+  size_t sum = d.DFS(data, "AA", 0, 0, open);
 
   std::cout << "Total pressure released: " << sum << '\n';
-
-  int t = 0;
 }
 
 void Day16::solveB(Data& data)
 {
+  Dfs d;
+  std::unordered_set<std::string> open;
+  size_t sum = d.dfs_elephant(data, "AA", false, 0, 0, open, data.usefulValves);
+
+  std::cout << "Pressured release with help from an elephant: " << sum << '\n';
 }
 
 void Day16::solve()
