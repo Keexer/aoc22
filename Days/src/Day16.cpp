@@ -11,26 +11,13 @@
 namespace
 {
 
-static constexpr auto INF = std::numeric_limits<size_t>::max();
-
-std::vector<size_t> getSteps(std::vector<std::vector<size_t> > steps, size_t current, size_t target)
-{
-  std::vector<size_t> path{};
-  while (current != target)
-  {
-    current = steps[current][target];
-    path.push_back(current);
-  }
-
-  return path;
-}
-
 class Dfs
 {
 public:
   size_t DFS(Day16::Report& r, std::string current, size_t time, size_t total, std::unordered_set<std::string>& open)
   {
-    size_t max = total + getFlow(r.flowRate2, open) * (30 - time);
+    static constexpr size_t minutes = 30;
+    size_t max = total + getFlow(r.flowRate2, open) * (minutes - time);
 
     for (auto next : r.usefulValves)
     {
@@ -41,7 +28,7 @@ public:
 
       size_t timeDelta = r.steps[current][next] + 1;
 
-      if (time + timeDelta >= 30)
+      if (time + timeDelta >= minutes)
       {
         continue;
       }
@@ -59,9 +46,11 @@ public:
     return max;
   }
 
-  size_t dfs_elephant(Day16::Report& r, std::string current, bool elephant, int64_t time, int64_t total, std::unordered_set<std::string>&open, const std::unordered_set<std::string>&useful) {
+  size_t dfs_elephant(Day16::Report& r, std::string current, bool elephant, int64_t time, int64_t total, std::unordered_set<std::string>&open, const std::unordered_set<std::string>&useful)
+  {
+    static constexpr size_t minutes = 26;
     // If we do nothing the maximum is: current total + flow from all opened valves * remaining time
-    int64_t max = total + getFlow(r.flowRate2, open) * (26 - time);
+    size_t max = total + getFlow(r.flowRate2, open) * (minutes - time);
     // But if we are us, we can let loose an elephant
     if (!elephant) {
       // The elephant can only open valves that we haven't open yet.
@@ -70,25 +59,25 @@ public:
 
       std::unordered_set<std::string> new_open;
       // Let the elephant run around from "AA" at time zero
-      int64_t max_elephant = dfs_elephant(r, "AA", true, 0, 0, new_open, new_candidates);
-      max = total + getFlow(r.flowRate2, open) * (26 - time) + max_elephant;
+      size_t max_elephant = dfs_elephant(r, "AA", true, 0, 0, new_open, new_candidates);
+      max = total + getFlow(r.flowRate2, open) * (minutes - time) + max_elephant;
     }
     for (auto& next : useful) {
       // moving to this valve is useless, as it is already open
       if (open.contains(next))
         continue;
 
-      int64_t time_delta = r.steps[current][next] + 1;
+      size_t time_delta = r.steps[current][next] + 1;
       // moving to this valve and opening it would take more time than we have
-      if (time + time_delta >= 26)
+      if (time + time_delta >= minutes)
         continue;
 
       // the flow as we move to the next valve and open it
-      int64_t new_total = total + time_delta * getFlow(r.flowRate2, open);
+      size_t new_total = total + time_delta * getFlow(r.flowRate2, open);
       open.insert(next);
       // recurse with this valve open, if it is an improvement, remember
       // importantly, this path is common for both the us and the elephant
-      int64_t value = dfs_elephant(r, next, elephant, time + time_delta, new_total, open, useful);
+      size_t value = dfs_elephant(r, next, elephant, time + time_delta, new_total, open, useful);
       if (max < value) max = value;
       open.erase(next);
     }
@@ -166,7 +155,9 @@ Day16::Data Day16::extract()
   {
     r.valveOpen = false;
 
-    std::string valve = line.substr(6, 2);
+    static constexpr size_t startOfValve = 6;
+
+    std::string valve = line.substr(startOfValve, 2);
 
     r.valves.insert(valve);
     std::string flow = line.substr(line.find("=") + 1, line.find(";"));
@@ -183,8 +174,9 @@ Day16::Data Day16::extract()
       size_t comma = line.find(",");
       if (comma == std::string::npos)
       {
+        std::string lastLine = line.substr(0, 2);
         // add last
-        r.neighbours.insert(std::make_pair(valve, line));
+        r.neighbours.insert(std::make_pair(valve, lastLine));
         break;
       }
       r.neighbours.insert(std::make_pair(valve, line.substr(0, comma)));
