@@ -60,11 +60,6 @@ void Day17::solveA(Input& input)
         emptyRows++;
       }
 
-      if (emptyRows < 3)
-      {
-        map.insert(map.end(), 3 - emptyRows, row);
-      }
-
       if (emptyRows < 3 + toAdd)
       {
         map.insert(map.end(), toAdd + 3 - emptyRows, row);
