@@ -183,10 +183,7 @@ void Day17::solveB(Input& input)
 
             if (found)
             {
-              std::vector<std::vector<bool> >::iterator begin = map.begin() + bla;
-              std::vector<std::vector<bool> >::iterator end = map.begin() + bla + index;
-              auto diff = std::distance(begin, end);
-              rowUntilPatternRepeats = diff;
+              rowUntilPatternRepeats = index;
               findNumberOfRocksInPattern = true;
               break;
             }
