@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include <numeric>
 
 Day19::Data Day19::extract()
 {
@@ -50,6 +51,7 @@ void Day19::solveA(Data& blueprints)
   Geode max{};
   Geode geodes1{};
   Geode geodes2{};
+  static constexpr int maxTime = 24;
   int index{};
   int result{};
 
@@ -58,8 +60,8 @@ void Day19::solveA(Data& blueprints)
     ++index;
     Material m{};
     Robots r{};
-    geodes1 = dfs(b, m, r, 0, true, false, false, false);
-    geodes2 = dfs(b, m, r, 0, false, true, false, false);
+    geodes1 = dfs(b, m, r, 0, maxTime, true, false, false, false);
+    geodes2 = dfs(b, m, r, 0, maxTime, false, true, false, false);
 
     max = std::max(geodes1, geodes2);
     result += index * max;
@@ -68,8 +70,35 @@ void Day19::solveA(Data& blueprints)
   std::cout << "Quality level of blueprint = " << result << '\n';
 }
 
-void Day19::solveB(Data&)
+void Day19::solveB(Data& blueprints)
 {
+  Geode max{};
+  Geode geodes1{};
+  Geode geodes2{};
+  static constexpr int maxTime = 32;
+  int index{};
+  int result{};
+  std::vector<Geode> geodes;
+
+  for (const auto& b : blueprints)
+  {
+    if (index >= 3)
+    {
+      break;
+    }
+    ++index;
+    Material m{};
+    Robots r{};
+    geodes1 = dfs(b, m, r, 0, maxTime, true, false, false, false);
+    geodes2 = dfs(b, m, r, 0, maxTime, false, true, false, false);
+
+    max = std::max(geodes1, geodes2);
+    geodes.push_back(max);
+  }
+
+  result = std::accumulate(geodes.begin(), geodes.end(), 1, std::multiplies<int>());
+
+  std::cout << "Total geodes collected = " << result << '\n';
 }
 
 void Day19::solve()
@@ -79,9 +108,9 @@ void Day19::solve()
   solveB(data);
 }
 
-int Day19::dfs(const Blueprint& blueprint, Material material, Robots robots, int time, bool createOreRobot, bool createClayRobot, bool createObsidianRobot, bool createGeodeRobot)
+int Day19::dfs(const Blueprint& blueprint, Material material, Robots robots, int time, int maxTime, bool createOreRobot, bool createClayRobot, bool createObsidianRobot, bool createGeodeRobot)
 {
-  static constexpr int minutes = 24;
+  int minutes = maxTime;
   if (time >= minutes)
   {
     return material.geode;
@@ -91,15 +120,15 @@ int Day19::dfs(const Blueprint& blueprint, Material material, Robots robots, int
 
   if (createOreRobot && robots.oreRobots == std::max({blueprint.oreRobot.oreCost, blueprint.clayRobot.oreCost, blueprint.obsidianRobot.oreCost, blueprint.geodeRobot.oreCost}))
   {
-    return max;
+    createOreRobot = false;
   }
   if (createClayRobot && robots.clayRobots == blueprint.obsidianRobot.clayCost)
   {
-    return max;
+    createClayRobot = false;
   }
   if (createObsidianRobot && robots.obsidianRobots == blueprint.geodeRobot.obsidianCost)
   {
-    return max;
+    createObsidianRobot = false;
   }
 
   if (createOreRobot)
@@ -111,23 +140,23 @@ int Day19::dfs(const Blueprint& blueprint, Material material, Robots robots, int
 
     while (material.ore < blueprint.oreRobot.oreCost)
     {
-      waitCycle(material, robots, time);
+      waitCycle(material, robots, time, minutes);
     }
 
     material.ore -= blueprint.oreRobot.oreCost;
-    waitCycle(material, robots, time);
+    waitCycle(material, robots, time, minutes);
     robots.oreRobots++;
 
-    int value = dfs(blueprint, material, robots, time, true, false, false, false);
+    int value = dfs(blueprint, material, robots, time, maxTime, true, false, false, false);
     if (value > max)
       max = value;
-    value = dfs(blueprint, material, robots, time, false, true, false, false);
+    value = dfs(blueprint, material, robots, time, maxTime, false, true, false, false);
     if (value > max)
       max = value;
-    value = dfs(blueprint, material, robots, time, false, false, true, false);
+    value = dfs(blueprint, material, robots, time, maxTime, false, false, true, false);
     if (value > max)
       max = value;
-    value = dfs(blueprint, material, robots, time, false, false, false, true);
+    value = dfs(blueprint, material, robots, time, maxTime, false, false, false, true);
     if (value > max)
       max = value;
   }
@@ -140,23 +169,23 @@ int Day19::dfs(const Blueprint& blueprint, Material material, Robots robots, int
 
     while (material.ore < blueprint.clayRobot.oreCost)
     {
-      waitCycle(material, robots, time);
+      waitCycle(material, robots, time, minutes);
     }
 
     material.ore -= blueprint.clayRobot.oreCost;
-    waitCycle(material, robots, time);
+    waitCycle(material, robots, time, minutes);
     robots.clayRobots++;
 
-    int value = dfs(blueprint, material, robots, time, true, false, false, false);
+    int value = dfs(blueprint, material, robots, time, maxTime, true, false, false, false);
     if (value > max)
       max = value;
-    value = dfs(blueprint, material, robots, time, false, true, false, false);
+    value = dfs(blueprint, material, robots, time, maxTime, false, true, false, false);
     if (value > max)
       max = value;
-    value = dfs(blueprint, material, robots, time, false, false, true, false);
+    value = dfs(blueprint, material, robots, time, maxTime, false, false, true, false);
     if (value > max)
       max = value;
-    value = dfs(blueprint, material, robots, time, false, false, false, true);
+    value = dfs(blueprint, material, robots, time, maxTime, false, false, false, true);
     if (value > max)
       max = value;
   }
@@ -169,24 +198,24 @@ int Day19::dfs(const Blueprint& blueprint, Material material, Robots robots, int
 
     while ((material.ore < blueprint.obsidianRobot.oreCost) || (material.clay < blueprint.obsidianRobot.clayCost))
     {
-      waitCycle(material, robots, time);
+      waitCycle(material, robots, time, minutes);
     }
 
     material.ore -= blueprint.obsidianRobot.oreCost;
     material.clay -= blueprint.obsidianRobot.clayCost;
-    waitCycle(material, robots, time);
+    waitCycle(material, robots, time, minutes);
     robots.obsidianRobots++;
 
-    int value = dfs(blueprint, material, robots, time, true, false, false, false);
+    int value = dfs(blueprint, material, robots, time, maxTime, true, false, false, false);
     if (value > max)
       max = value;
-    value = dfs(blueprint, material, robots, time, false, true, false, false);
+    value = dfs(blueprint, material, robots, time, maxTime, false, true, false, false);
     if (value > max)
       max = value;
-    value = dfs(blueprint, material, robots, time, false, false, true, false);
+    value = dfs(blueprint, material, robots, time, maxTime, false, false, true, false);
     if (value > max)
       max = value;
-    value = dfs(blueprint, material, robots, time, false, false, false, true);
+    value = dfs(blueprint, material, robots, time, maxTime, false, false, false, true);
     if (value > max)
       max = value;
   }
@@ -199,24 +228,24 @@ int Day19::dfs(const Blueprint& blueprint, Material material, Robots robots, int
 
     while ((material.ore < blueprint.geodeRobot.oreCost) || (material.obsidian < blueprint.geodeRobot.obsidianCost))
     {
-      waitCycle(material, robots, time);
+      waitCycle(material, robots, time, minutes);
     }
 
     material.ore -= blueprint.geodeRobot.oreCost;
     material.obsidian -= blueprint.geodeRobot.obsidianCost;
-    waitCycle(material, robots, time);
+    waitCycle(material, robots, time, minutes);
     robots.geodeRobots++;
 
-    int value = dfs(blueprint, material, robots, time, true, false, false, false);
+    int value = dfs(blueprint, material, robots, time, maxTime, true, false, false, false);
     if (value > max)
       max = value;
-    value = dfs(blueprint, material, robots, time, false, true, false, false);
+    value = dfs(blueprint, material, robots, time, maxTime, false, true, false, false);
     if (value > max)
       max = value;
-    value = dfs(blueprint, material, robots, time, false, false, true, false);
+    value = dfs(blueprint, material, robots, time, maxTime, false, false, true, false);
     if (value > max)
       max = value;
-    value = dfs(blueprint, material, robots, time, false, false, false, true);
+    value = dfs(blueprint, material, robots, time, maxTime, false, false, false, true);
     if (value > max)
       max = value;
   }
@@ -224,9 +253,9 @@ int Day19::dfs(const Blueprint& blueprint, Material material, Robots robots, int
   return max;
 }
 
-void Day19::waitCycle(Material& material, Robots robots, int& time)
+void Day19::waitCycle(Material& material, Robots robots, int& time, int maxTime)
 {
-  if (time == 24)
+  if (time == maxTime)
   {
     return;
   }

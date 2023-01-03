@@ -63,6 +63,6 @@ public:
   void solveB(Data&);
   void solve();
 
-  int dfs(const Blueprint& blueprint, Material material, Robots robots, int time, bool createOreRobot, bool createClayRobot, bool createObsidianRobot, bool createGeodeRobot);
-  void waitCycle(Material& material, Robots robots, int& time);
+  int dfs(const Blueprint& blueprint, Material material, Robots robots, int time, int maxTime, bool createOreRobot, bool createClayRobot, bool createObsidianRobot, bool createGeodeRobot);
+  void waitCycle(Material& material, Robots robots, int& time, int maxTime);
 };
