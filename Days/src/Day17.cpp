@@ -3,8 +3,8 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include <algorithm>
 #include <iostream>
+#include <memory>
 
 Day17::Input Day17::extract()
 {
@@ -28,9 +28,10 @@ void Day17::solveA(Input& input)
   std::string inputTemp = input;
   std::vector<IShape*> shapeTemp = shapes;
   bool init = true;
-  Rock* rock{};
+  std::unique_ptr<Rock> rock{};
+  static constexpr int loopCount = 2022;
   
-  for (int i = 0; i < 2022;)
+  for (int i = 0; i < loopCount;)
   {
     if (inputTemp.size() == 0)
     {
@@ -69,7 +70,7 @@ void Day17::solveA(Input& input)
         map.resize(map.size() - (emptyRows - 3 - toAdd));
       }
 
-      rock = new Rock(shape);
+      rock = std::make_unique<Rock>(shape);
       rock->setStart(map.size() - toAdd);
     }
 
@@ -90,7 +91,6 @@ void Day17::solveA(Input& input)
       i++;
       rock->saveToMap(map);
       init = true;
-      delete rock;
     }
     else
     {
@@ -118,28 +118,22 @@ void Day17::solveB(Input& input)
   std::string inputTemp = input;
   std::vector<IShape*> shapeTemp = shapes;
   bool init = true;
-  Rock* rock{};
+  std::unique_ptr<Rock> rock{};
   std::vector<std::vector<bool> > pattern;
   static constexpr size_t eval = 10000;
-  size_t bla{ 1 };
-  size_t startOfPattern{};
-  size_t endOfPattern{};
-  bool first{ true };
-  size_t index{};
   size_t rowUntilPatternRepeats{};
   bool findNumberOfRocksInPattern{ false };
-  bool findingRocks{ false };
   size_t startNumberOfFallingRocks{};
   size_t endNumberOfFallingRocks{};
-  size_t heightBeforeSearchinhForPattern{};
   size_t rocksToAddAtEnd{};
   size_t startEnd{};
   size_t startEndSize{};
   bool findingLastRocks{ false };
 
   size_t result{};
+  static constexpr size_t loopCount = 1'000'000'000'000;
 
-  for (int i = 0; i < 1'000'000'000'000;)
+  for (size_t i = 0; i < loopCount;)
   {
     if (inputTemp.size() == 0)
     {
@@ -154,36 +148,28 @@ void Day17::solveB(Input& input)
     if (init)
     {
       // Calculate on how many rows needed until pattern repeats itself
-      if (i == eval)
+      if (i == eval * 2)
       {
-        for (int k = 0; k < 100000; k++)
+        for (size_t k = 1; k < eval; k++)
         {
-          index++;
-          pattern.push_back(map[bla + index]);
-          if (startOfPattern == 0)
-          {
-            startOfPattern = bla;
-            endOfPattern = bla + index;
-          }
+          pattern.push_back(map[eval + k]);
 
-          if (!std::equal(pattern.back().begin(), pattern.back().end(), (map.begin() + bla)->begin()))
+          if (!std::equal(pattern.back().begin(), pattern.back().end(), (map.begin() + eval)->begin()))
           {
             pattern.clear();
-            startOfPattern = 0;
-            endOfPattern = 0;
-            bla = eval;
           }
           else
           {
             bool found = true;
-            for (int j = 1; j < 100 && found; j++)
+            static constexpr int conditionUntilFound = 100;
+            for (int j = 1; j < conditionUntilFound && found; j++)
             {
-              found = std::equal(map[bla + index + j].begin(), map[bla + index + j].end(), (map.begin() + bla + j)->begin());
+              found = std::equal(map[eval + k + j].begin(), map[eval + k + j].end(), (map.begin() + eval + j)->begin());
             }
 
             if (found)
             {
-              rowUntilPatternRepeats = index;
+              rowUntilPatternRepeats = k;
               findNumberOfRocksInPattern = true;
               break;
             }
@@ -196,11 +182,10 @@ void Day17::solveB(Input& input)
       {
         if (map.size() % rowUntilPatternRepeats < 3)
         {
-          static size_t startFallingSize{};
           if (startNumberOfFallingRocks != 0)
           {
             endNumberOfFallingRocks = i;
-            rocksToAddAtEnd = 1'000'000'000'000 % (endNumberOfFallingRocks - startNumberOfFallingRocks);
+            rocksToAddAtEnd = loopCount % (endNumberOfFallingRocks - startNumberOfFallingRocks);
             startEnd = i;
             inputTemp = input;
             shapeTemp = shapes;
@@ -222,7 +207,6 @@ void Day17::solveB(Input& input)
             {
               if (std::find(map[e].begin(), map[e].end(), true) != map[e].end())
               {
-                startFallingSize = e;
                 break;
               }
             }
@@ -239,7 +223,7 @@ void Day17::solveB(Input& input)
           if (std::find(map[e].begin(), map[e].end(), true) != map[e].end())
           {
             toAddAtEnd = e - startEndSize;
-            result = (1'000'000'000'000 / (endNumberOfFallingRocks - startNumberOfFallingRocks)) * rowUntilPatternRepeats + toAddAtEnd;
+            result = (loopCount / (endNumberOfFallingRocks - startNumberOfFallingRocks)) * rowUntilPatternRepeats + toAddAtEnd;
             std::cout << "Map size: " << result << '\n';
             return;
           }
@@ -275,7 +259,7 @@ void Day17::solveB(Input& input)
         map.resize(map.size() - (emptyRows - 3 - toAdd));
       }
 
-      rock = new Rock(shape);
+      rock = std::make_unique<Rock>(shape);
       rock->setStart(map.size() - toAdd);
     }
 
@@ -296,7 +280,6 @@ void Day17::solveB(Input& input)
       i++;
       rock->saveToMap(map);
       init = true;
-      delete rock;
     }
     else
     {

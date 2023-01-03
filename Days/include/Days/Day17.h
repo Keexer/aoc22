@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
 
 using Shape = std::vector<std::vector<bool> >;
 
@@ -76,7 +77,7 @@ struct Rock
     , width(mShape->getShape().front().size())
   {
     std::vector<bool> rockRow(7, false);
-    for (int i = 0; i < height; i++)
+    for (size_t i = 0; i < height; i++)
     {
       rock.push_back(rockRow);
     }
@@ -93,7 +94,7 @@ struct Rock
   void moveLeft(std::vector<std::vector<bool> >& map)
   {
     bool canMove = true;
-    for (int i = 0; i < height; i++)
+    for (size_t i = 0; i < height; i++)
     {
       if (rock[i][0])
       {
@@ -102,19 +103,9 @@ struct Rock
       }
     }
 
-    std::vector<std::vector<bool> > temp = rock;
-    for (int i = 0; i < height && canMove; ++i)
+    for (size_t j = 0; j < height && canMove; ++j)
     {
-      for (int j = 0; j < 6 && canMove; j++)
-      {
-        temp[i][j] = temp[i][j + 1];
-        temp[i][j + 1] = false;
-      }
-    }
-
-    for (int j = 0; j < height; ++j)
-    {
-      for (int i = 1; i < map.front().size(); ++i)
+      for (size_t i = 1; i < map.front().size(); ++i)
       {
         if (rock[j][i])
         {
@@ -129,14 +120,21 @@ struct Rock
 
     if (canMove)
     {
-      rock = temp;
+      for (size_t i = 0; i < height; ++i)
+      {
+        for (size_t j = 0; j < 6; j++)
+        {
+          rock[i][j] = rock[i][j + 1];
+          rock[i][j + 1] = false;
+        }
+      }
     }
   }
 
   void moveRight(std::vector<std::vector<bool> >& map)
   {
     bool canMove = true;
-    for (int i = 0; i < height; ++i)
+    for (size_t i = 0; i < height; ++i)
     {
       if (rock[i][6])
       {
@@ -145,19 +143,9 @@ struct Rock
       }
     }
 
-    std::vector<std::vector<bool> > temp = rock;
-    for (int i = 0; i < height && canMove; ++i)
+    for (size_t j = 0; j < height && canMove; ++j)
     {
-      for (int j = 5; j >= 0 && canMove; --j)
-      {
-        temp[i][j + 1] = temp[i][j];
-        temp[i][j] = false;
-      }
-    }
-
-    for (int j = 0; j < height; ++j)
-    {
-      for (int i = static_cast<int>(map.front().size()) - 2; i >= 0; --i)
+      for (size_t i = static_cast<int>(map.front().size()) - 2; i >= 0; --i)
       {
         if (rock[j][i])
         {
@@ -172,7 +160,14 @@ struct Rock
 
     if (canMove)
     {
-      rock = temp;
+      for (size_t i = 0; i < height; ++i)
+      {
+        for (int j = 5; j >= 0; --j)
+        {
+          rock[i][j + 1] = rock[i][j];
+          rock[i][j] = false;
+        }
+      }
     }
   }
 
@@ -183,15 +178,15 @@ struct Rock
 
   bool isLanded(std::vector<std::vector<bool> >& map)
   {
-    for (int k = 0; k < height; ++k)
+    for (size_t k = 0; k < height; ++k)
     {
-      for (int i = static_cast<int>(map.size()) - 1; i >= mOriginY; i--)
+      for (int i = static_cast<int>(map.size()) - 1; i >= static_cast<int>(mOriginY); i--)
       {
         if (std::find(map[i - 1].begin(), map[i - 1].end(), true) != map[i - 1].end())
         {
-          if (mOriginY == i)
+          if (static_cast<int>(mOriginY) == i)
           {
-            for (int j = 0; j < map.front().size(); j++)
+            for (size_t j = 0; j < map.front().size(); j++)
             {
               if (map[i - 1][j])
               {
@@ -203,9 +198,9 @@ struct Rock
             }
           }
           // Handle plus sign
-          if (mOriginY + 1 == i && height > 1)
+          if (static_cast<int>(mOriginY) + 1 == i && height > 1)
           {
-            for (int j = 0; j < map.front().size(); j++)
+            for (size_t j = 0; j < map.front().size(); j++)
             {
               if (map[i - 1][j])
               {
@@ -256,7 +251,7 @@ public:
     row.assign(7, false);
     map.assign(4, row);
     
-    for (int i = 0; i < map.front().size(); i++)
+    for (size_t i = 0; i < map.front().size(); i++)
     {
       map[0][i] = true;
     }

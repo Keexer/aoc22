@@ -53,15 +53,15 @@ void fillWithWater(Matrix3& matrix, int x, int y, int z)
 
   matrix.at(x).at(y).at(z) = NodeType::WATER;
 
-  if (x + 1 < matrix.size())
+  if (x + 1 < static_cast<int>(matrix.size()))
     fillWithWater(matrix, x + 1, y, z);
   if (x - 1 > 0)
     fillWithWater(matrix, x - 1, y, z);
-  if (y + 1 < matrix.size())
+  if (y + 1 < static_cast<int>(matrix.size()))
     fillWithWater(matrix, x, y + 1, z);
   if (y - 1 > 0)
     fillWithWater(matrix, x, y - 1, z);
-  if (z + 1 < matrix.size())
+  if (z + 1 < static_cast<int>(matrix.size()))
     fillWithWater(matrix, x, y, z + 1);
   if (z - 1 > 0)
     fillWithWater(matrix, x, y, z - 1);
@@ -85,7 +85,7 @@ Day18::Data Day18::extract()
   while (std::getline(file, line))
   {
     Cube c{};
-    char comma;
+    char comma{};
     std::stringstream s{line};
   
     s >> c.x;
@@ -106,11 +106,11 @@ void Day18::solveA(Data& input)
 
   Matrix3 space = createSpace(input);
 
-  for (int x = 0; x < space.size(); ++x)
+  for (int x = 0; x < static_cast<int>(space.size()); ++x)
   {
-    for (int y = 0; y < space.size(); ++y)
+    for (int y = 0; y < static_cast<int>(space.size()); ++y)
     {
-      for (int z = 0; z < space.size(); ++z)
+      for (int z = 0; z < static_cast<int>(space.size()); ++z)
       {
         if (space.at(x).at(y).at(z) == NodeType::LAVA)
         {
@@ -131,11 +131,11 @@ void Day18::solveB(Data& input)
 
   fillWithWater(space, 0, 0, 0);
 
-  for (int x = 0; x < space.size(); ++x)
+  for (int x = 0; x < static_cast<int>(space.size()); ++x)
   {
-    for (int y = 0; y < space.size(); ++y)
+    for (int y = 0; y < static_cast<int>(space.size()); ++y)
     {
-      for (int z = 0; z < space.size(); ++z)
+      for (int z = 0; z < static_cast<int>(space.size()); ++z)
       {
         if (space.at(x).at(y).at(z) == NodeType::LAVA)
         {
