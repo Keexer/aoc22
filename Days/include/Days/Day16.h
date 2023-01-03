@@ -11,15 +11,10 @@ public:
   struct Report
   {
     std::unordered_set<std::string> valves{};
-    std::unordered_map<std::string, size_t> flowRate2{};
+    std::unordered_map<std::string, int64_t> flowRate{};
     std::unordered_multimap<std::string, std::string> neighbours{};
     std::unordered_set<std::string> usefulValves{};
-    std::unordered_map<std::string, std::unordered_map<std::string, size_t> > steps{};
-
-    size_t origin{};
-    std::vector<size_t> paths{};
-    uint32_t flowRate{0};
-    bool valveOpen{false};
+    std::unordered_map<std::string, std::unordered_map<std::string, int64_t> > steps{};
   };
 
   using Data = Report;
