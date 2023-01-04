@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <numeric>
 
 Day21::Data Day21::extract()
 {
@@ -74,8 +75,10 @@ void Day21::solveA(Data data)
 void Day21::solveB(Data data)
 {
   static constexpr int64_t guessTimate = 20;
-  int64_t min = std::numeric_limits<int64_t>::min() >> guessTimate;
-  int64_t max = std::numeric_limits<int64_t>::max() >> guessTimate;
+  int64_t min = std::numeric_limits<int64_t>::min();
+  min = min >> guessTimate;
+  int64_t max = std::numeric_limits<int64_t>::max();
+  max = max >> guessTimate;
   auto initialVal = findEqual(data, data.at("root"));
 
   while (true)
