@@ -60,13 +60,16 @@ void Day20::solveB(Data data)
   std::vector<int64_t> moveOrder(data.size());
   std::iota(moveOrder.begin(), moveOrder.end(), 0);
 
-  for (int i = 0; i < data.size(); ++i)
+  for (int mixingLoops = 0; mixingLoops < 10; ++mixingLoops)
   {
-    auto it = std::find(moveOrder.begin(), moveOrder.end(), i);
-    int64_t distance = static_cast<int>(std::distance(moveOrder.begin(), it));
-    int64_t steps = data.at(distance);
-    moveValue(data, steps, distance);
-    moveValue(moveOrder, steps, distance);
+    for (int i = 0; i < data.size(); ++i)
+    {
+      auto it = std::find(moveOrder.begin(), moveOrder.end(), i);
+      int64_t distance = static_cast<int>(std::distance(moveOrder.begin(), it));
+      int64_t steps = data.at(distance);
+      moveValue(data, steps, distance);
+      moveValue(moveOrder, steps, distance);
+    }
   }
 
   int64_t distanceToZero = static_cast<int>(std::distance(data.begin(), std::find(data.begin(), data.end(), 0)));
@@ -82,14 +85,13 @@ void Day20::solve()
 {
   auto data = extract();
   solveA(data);
-  //solveB(data);
+  solveB(data);
 }
 
 void Day20::moveValue(Data& transform, int64_t steps, int64_t currentPos)
 {
   auto val = transform.at(currentPos);
-  steps += steps / static_cast<int64_t>(transform.size());
-  steps = steps % static_cast<int64_t>(transform.size());
+  steps = steps % (static_cast<int64_t>(transform.size() - 1));
   if (steps == 0)
   {
     return;
