@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <optional>
 #include <cstdint>
+#include <utility>
 
 class Day21
 {
@@ -28,10 +29,11 @@ public:
 
   using Data = std::unordered_map<std::string, Monkey>;
   Data extract();
-  void solveA(Data& data);
-  void solveB(Data& data);
+  void solveA(Data data);
+  void solveB(Data data);
   void solve();
 
 private:
   int64_t findYell(Data& data, Monkey monkey);
+  std::pair<int64_t, int64_t> findEqual(Data& data, Monkey monkey);
 };
