@@ -7,6 +7,13 @@
 #include <numeric>
 #include <functional>
 
+namespace
+{
+  static constexpr int64_t FIRST_VALUE = 1000;
+  static constexpr int64_t SECOND_VALUE = 2000;
+  static constexpr int64_t THIRD_VALUE = 3000;
+}
+
 Day20::Data Day20::extract()
 {
   Data ret;
@@ -18,8 +25,8 @@ Day20::Data Day20::extract()
     return {};
   }
 
-  std::string line;
-  int64_t val;
+  std::string line{};
+  int64_t val{};
 
   while (std::getline(file, line))
   {
@@ -36,7 +43,7 @@ void Day20::solveA(Data data)
   std::vector<int64_t> moveOrder(data.size());
   std::iota(moveOrder.begin(), moveOrder.end(), 0);
 
-  for (int i = 0; i < data.size(); ++i)
+  for (size_t i = 0; i < data.size(); ++i)
   {
     auto it = std::find(moveOrder.begin(), moveOrder.end(), i);
     int64_t distance = static_cast<int64_t>(std::distance(moveOrder.begin(), it));
@@ -47,22 +54,25 @@ void Day20::solveA(Data data)
 
   int64_t distanceToZero = static_cast<int64_t>(std::distance(data.begin(), std::find(data.begin(), data.end(), 0)));
 
-  int64_t first = data.at((1000 + distanceToZero) % data.size());
-  int64_t second = data.at((2000 + distanceToZero) % data.size());
-  int64_t third = data.at((3000 + distanceToZero) % data.size());
+  int64_t first = data.at((FIRST_VALUE + distanceToZero) % data.size());
+  int64_t second = data.at((SECOND_VALUE + distanceToZero) % data.size());
+  int64_t third = data.at((THIRD_VALUE + distanceToZero) % data.size());
 
   std::cout << "Sum of coordinates = " << first + second + third << '\n';
 }
 
 void Day20::solveB(Data data)
 {
-  std::transform(data.begin(), data.end(), data.begin(), std::bind(std::multiplies<int64_t>(), std::placeholders::_1, 811589153));
+  static constexpr int64_t multiplicationNumber = 811589153;
+  static constexpr int maxLoops = 10;
+
+  std::transform(data.begin(), data.end(), data.begin(), std::bind(std::multiplies<int64_t>(), std::placeholders::_1, multiplicationNumber));
   std::vector<int64_t> moveOrder(data.size());
   std::iota(moveOrder.begin(), moveOrder.end(), 0);
 
-  for (int mixingLoops = 0; mixingLoops < 10; ++mixingLoops)
+  for (int mixingLoops = 0; mixingLoops < maxLoops; ++mixingLoops)
   {
-    for (int i = 0; i < data.size(); ++i)
+    for (size_t i = 0; i < data.size(); ++i)
     {
       auto it = std::find(moveOrder.begin(), moveOrder.end(), i);
       int64_t distance = static_cast<int>(std::distance(moveOrder.begin(), it));
@@ -74,9 +84,9 @@ void Day20::solveB(Data data)
 
   int64_t distanceToZero = static_cast<int>(std::distance(data.begin(), std::find(data.begin(), data.end(), 0)));
 
-  int64_t first = data.at((1000 + distanceToZero) % data.size());
-  int64_t second = data.at((2000 + distanceToZero) % data.size());
-  int64_t third = data.at((3000 + distanceToZero) % data.size());
+  int64_t first = data.at((FIRST_VALUE + distanceToZero) % data.size());
+  int64_t second = data.at((SECOND_VALUE + distanceToZero) % data.size());
+  int64_t third = data.at((THIRD_VALUE + distanceToZero) % data.size());
 
   std::cout << "Sum of coordinates = " << first + second + third << '\n';
 }
