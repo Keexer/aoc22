@@ -5,6 +5,7 @@
 #include <iostream>
 #include <algorithm>
 #include <numeric>
+#include <functional>
 
 Day20::Data Day20::extract()
 {
@@ -18,7 +19,7 @@ Day20::Data Day20::extract()
   }
 
   std::string line;
-  int val;
+  int64_t val;
 
   while (std::getline(file, line))
   {
@@ -32,78 +33,99 @@ Day20::Data Day20::extract()
 
 void Day20::solveA(Data data)
 {
-  std::vector<int> moveOrder(data.size());
+  std::vector<int64_t> moveOrder(data.size());
   std::iota(moveOrder.begin(), moveOrder.end(), 0);
 
   for (int i = 0; i < data.size(); ++i)
   {
     auto it = std::find(moveOrder.begin(), moveOrder.end(), i);
-    int distance = static_cast<int>(std::distance(moveOrder.begin(), it));
-    int temp = data.at(distance);
-    moveValue(data, temp, distance);
-    moveValue(moveOrder, temp, distance);
+    int64_t distance = static_cast<int64_t>(std::distance(moveOrder.begin(), it));
+    int64_t steps = data.at(distance);
+    moveValue(data, steps, distance);
+    moveValue(moveOrder, steps, distance);
   }
 
-  int distanceToZero = static_cast<int>(std::distance(data.begin(), std::find(data.begin(), data.end(), 0)));
+  int64_t distanceToZero = static_cast<int64_t>(std::distance(data.begin(), std::find(data.begin(), data.end(), 0)));
 
-  int first = data.at((1000 + distanceToZero) % data.size());
-  int second = data.at((2000 + distanceToZero) % data.size());
-  int third = data.at((3000 + distanceToZero) % data.size());
+  int64_t first = data.at((1000 + distanceToZero) % data.size());
+  int64_t second = data.at((2000 + distanceToZero) % data.size());
+  int64_t third = data.at((3000 + distanceToZero) % data.size());
 
   std::cout << "Sum of coordinates = " << first + second + third << '\n';
 }
 
 void Day20::solveB(Data data)
 {
+  std::transform(data.begin(), data.end(), data.begin(), std::bind(std::multiplies<int64_t>(), std::placeholders::_1, 811589153));
+  std::vector<int64_t> moveOrder(data.size());
+  std::iota(moveOrder.begin(), moveOrder.end(), 0);
+
+  for (int i = 0; i < data.size(); ++i)
+  {
+    auto it = std::find(moveOrder.begin(), moveOrder.end(), i);
+    int64_t distance = static_cast<int>(std::distance(moveOrder.begin(), it));
+    int64_t steps = data.at(distance);
+    moveValue(data, steps, distance);
+    moveValue(moveOrder, steps, distance);
+  }
+
+  int64_t distanceToZero = static_cast<int>(std::distance(data.begin(), std::find(data.begin(), data.end(), 0)));
+
+  int64_t first = data.at((1000 + distanceToZero) % data.size());
+  int64_t second = data.at((2000 + distanceToZero) % data.size());
+  int64_t third = data.at((3000 + distanceToZero) % data.size());
+
+  std::cout << "Sum of coordinates = " << first + second + third << '\n';
 }
 
 void Day20::solve()
 {
   auto data = extract();
   solveA(data);
-  solveB(data);
+  //solveB(data);
 }
 
-void Day20::moveValue(std::vector<int>& transform, int steps, int currentPos)
+void Day20::moveValue(Data& transform, int64_t steps, int64_t currentPos)
 {
+  auto val = transform.at(currentPos);
+  steps += steps / static_cast<int64_t>(transform.size());
+  steps = steps % static_cast<int64_t>(transform.size());
   if (steps == 0)
   {
     return;
   }
-  else if (steps < 0)
+  if (steps < 0)
   {
-    while (steps < 0)
+    auto diff = currentPos + steps;
+    if (diff == 0)
     {
-      if (currentPos == 0)
-      {
-        transform.insert(transform.end() - 1, transform.front());
-        transform.erase(transform.begin());
-        currentPos = static_cast<int>(transform.size()) - 2;
-      }
-      else
-      {
-        std::iter_swap(transform.begin() + currentPos, transform.begin() + currentPos - 1);
-        --currentPos;
-      }
-      ++steps;
+      transform.erase(transform.begin() + currentPos);
+      transform.insert(transform.end(), val);
     }
+    else if (diff < 0)
+    {
+      transform.insert(transform.end() + diff, val);
+      transform.erase(transform.begin() + currentPos);
+    }
+    else
+    {
+      transform.erase(transform.begin() + currentPos);
+      transform.insert(transform.begin() + diff, val);
+    }
+
+    return;
   }
-  else if (steps > 0)
+  
+  // Go backwards
+  if (steps + currentPos >= static_cast<int64_t>(transform.size()))
   {
-    while (steps > 0)
-    {
-      if (currentPos == transform.size() - 1)
-      {
-        transform.insert(transform.begin() + 1, transform.back());
-        transform.erase(transform.end() - 1);
-        currentPos = 1;
-      }
-      else
-      {
-        std::iter_swap(transform.begin() + currentPos, transform.begin() + currentPos + 1);
-        ++currentPos;
-      }
-      --steps;
-    }
+    steps = steps + currentPos - (static_cast<int64_t>(transform.size()) - 1);
+    transform.erase(transform.begin() + currentPos);
+    transform.insert(transform.begin() + steps, val);
+  }
+  else
+  {
+    transform.erase(transform.begin() + currentPos);
+    transform.insert(transform.begin() + currentPos + steps, val);
   }
 }
